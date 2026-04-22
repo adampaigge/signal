@@ -77,8 +77,8 @@ export default function Home() {
             <div className="masthead-top">
               <span className="edition-label">{dateStr}</span>
               <div className="wordmark">
-                <span className="wordmark-primary">SUPERNOVA</span>
-                <span className="wordmark-sub">SIGNAL</span>
+                <span className="wordmark-primary">THE SIGNAL</span>
+                <span className="wordmark-sub">Supernova Labs</span>
               </div>
               <span className="edition-label">{stories.length} stories</span>
             </div>
