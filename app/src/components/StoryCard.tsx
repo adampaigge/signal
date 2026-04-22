@@ -33,7 +33,7 @@ export default function StoryCard({ story, onTagClick, variant = 'card' }: Props
           <div className="hero-glow" />
           {(story as any).og_image && (
             <div className="hero-img-wrap">
-              <img className="hero-img" src={(story as any).og_image} alt="" loading="lazy" />
+              <img className="hero-img" src={(story as any).og_image} alt="" loading="lazy" onError={e => { (e.currentTarget.parentElement!).style.display = "none"; }} />
             </div>
           )}
           <div className="hero-bar" style={{ background: color }} />
@@ -98,7 +98,7 @@ export default function StoryCard({ story, onTagClick, variant = 'card' }: Props
       <article className="card" style={{ '--c': color } as React.CSSProperties}>
         <div className="card-bar" style={{ background: color }} />
         {(story as any).og_image && (
-          <img className="card-img" src={(story as any).og_image} alt="" loading="lazy" />
+          <img className="card-img" src={(story as any).og_image} alt="" loading="lazy" onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
         )}
         <div className="card-body">
           <div className="meta-row tight">
@@ -128,7 +128,7 @@ export default function StoryCard({ story, onTagClick, variant = 'card' }: Props
 const STYLES = `
 /* ── OG Images ─────────────────────────────────────── */
 .hero-img-wrap {
-  width: 100%; height: 220px; overflow: hidden;
+  width: 100%; height: 260px; overflow: hidden;
   position: relative;
 }
 .hero-img {
@@ -139,12 +139,13 @@ const STYLES = `
 }
 .card-hero:hover .hero-img { filter: brightness(0.9) saturate(1.0); }
 .card-img {
-  width: 100%; height: 130px; object-fit: cover;
+  width: 100%; height: 140px; object-fit: cover;
   display: block;
-  filter: brightness(0.75) saturate(0.85);
+  filter: brightness(0.7) saturate(0.8);
   transition: filter 0.25s;
+  background: #0d0f15;
 }
-.card:hover .card-img { filter: brightness(0.88) saturate(0.95); }
+.card:hover .card-img { filter: brightness(0.85) saturate(0.95); }
 
 /* ── Hero ──────────────────────────────────────────── */
 .card-hero {
@@ -222,6 +223,7 @@ const STYLES = `
   border-radius: 3px; background: #0d0f15;
   display: flex; flex-direction: column; overflow: hidden;
   transition: border-color 0.18s, background 0.18s, transform 0.15s;
+  min-height: 180px;
 }
 .card:hover {
   border-color: rgba(255,255,255,0.14);
@@ -232,6 +234,7 @@ const STYLES = `
 .card-body {
   padding: 16px 18px 15px; flex: 1;
   display: flex; flex-direction: column; gap: 9px;
+  min-height: 0;
 }
 .card-title {
   font-family: 'IBM Plex Sans', sans-serif;
@@ -242,6 +245,7 @@ const STYLES = `
 .card-title a:hover { color: #fff; }
 .card-body-text {
   font-size: 13.5px; line-height: 1.62; color: #5d6375; flex: 1;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
 }
 .card-foot {
   display: flex; align-items: center;
