@@ -3,6 +3,7 @@ import type { Story } from '../types/story';
 import { demoStories } from '../data/demo-stories';
 import StoryCard from '../components/StoryCard';
 import TrendPanel from '../components/TrendPanel';
+import ParticleField from '../components/ParticleField';
 
 function useStories() {
   const [stories, setStories] = useState<Story[]>([]);
@@ -69,8 +70,8 @@ export default function Home() {
   return (
     <>
       <style>{STYLES}</style>
+      <ParticleField />
       <div className="snl-root">
-        {/* Masthead */}
         <header className="masthead">
           <div className="masthead-inner">
             <div className="masthead-top">
@@ -79,7 +80,7 @@ export default function Home() {
                 <span className="wordmark-primary">SUPERNOVA</span>
                 <span className="wordmark-sub">SIGNAL</span>
               </div>
-              <span className="edition-label">{stories.length} stories indexed</span>
+              <span className="edition-label">{stories.length} stories</span>
             </div>
             <div className="rule" />
             <nav className="tag-nav">
@@ -115,18 +116,17 @@ export default function Home() {
           </div>
         </header>
 
-        {/* Content */}
         <main className="shell">
           {loading ? (
             <div className="skel-grid">
               {Array.from({ length: 9 }).map((_, i) => (
-                <div key={i} className="skel" style={{ animationDelay: `${i * 0.08}s` }} />
+                <div key={i} className="skel" style={{ animationDelay: `${i * 0.07}s` }} />
               ))}
             </div>
           ) : filtered.length === 0 ? (
             <div className="empty">
               <p>No stories match.</p>
-              <button onClick={() => { setActiveTag(null); setSearch(''); }}>Clear</button>
+              <button onClick={() => { setActiveTag(null); setSearch(''); }}>Clear filters</button>
             </div>
           ) : (
             <>
@@ -172,155 +172,166 @@ const STYLES = `
 html { scroll-behavior: smooth; }
 
 :root {
-  --bg:       #08090d;
-  --s1:       #0f1117;
-  --s2:       #161920;
-  --s3:       #1d2029;
-  --border:   rgba(255,255,255,0.06);
-  --border2:  rgba(255,255,255,0.11);
-  --text:     #dde1ec;
-  --text2:    #9499ab;
-  --text3:    #5e6372;
-  --accent:   #4f8ef7;
-  --accent2:  #c84a0c;
+  --bg:      #08090d;
+  --s1:      #0d0f15;
+  --s2:      #13161e;
+  --s3:      #191c26;
+  --border:  rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.13);
+  --text:    #e2e6f3;
+  --text2:   #9aa0b4;
+  --text3:   #555b6e;
+  --accent:  #4f8ef7;
+  --accent2: #c84a0c;
   --fh: 'Playfair Display', Georgia, serif;
   --fb: 'IBM Plex Sans', system-ui, sans-serif;
   --fm: 'IBM Plex Mono', monospace;
 }
 
-body { background: var(--bg); color: var(--text); font-family: var(--fb); }
+body { background: var(--bg); color: var(--text); font-family: var(--fb); font-size: 16px; }
 
-.snl-root { min-height: 100vh; }
+.snl-root {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+}
 
-/* ── Masthead ─────────────────────────────────────────────── */
+/* ── Masthead ─────────────────────────────────────── */
 .masthead {
   position: sticky; top: 0; z-index: 50;
-  background: rgba(8,9,13,0.95);
-  backdrop-filter: blur(20px) saturate(1.4);
+  background: rgba(8,9,13,0.92);
+  backdrop-filter: blur(24px) saturate(1.6);
   border-bottom: 1px solid var(--border2);
 }
-.masthead-inner { max-width: 1440px; margin: 0 auto; padding: 0 28px; }
+.masthead-inner { max-width: 1440px; margin: 0 auto; padding: 0 24px; }
+
 .masthead-top {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 14px 0 10px;
+  padding: 16px 0 12px; gap: 16px;
 }
-.wordmark { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+.wordmark { display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .wordmark-primary {
   font-family: var(--fh);
-  font-size: 26px; font-weight: 900; letter-spacing: 0.2em;
-  background: linear-gradient(120deg, #dde1ec 0%, #4f8ef7 60%, #c84a0c 100%);
+  font-size: 30px; font-weight: 900; letter-spacing: 0.22em;
+  background: linear-gradient(115deg, #e2e6f3 0%, #6baee8 45%, #c84a0c 100%);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
   background-clip: text;
+  line-height: 1;
 }
 .wordmark-sub {
-  font-family: var(--fm); font-size: 9px; font-weight: 500;
-  letter-spacing: 0.42em; color: var(--text3); text-transform: uppercase;
+  font-family: var(--fm); font-size: 10px; font-weight: 500;
+  letter-spacing: 0.44em; color: var(--text3); text-transform: uppercase;
 }
 .edition-label {
-  font-family: var(--fm); font-size: 10.5px;
-  color: var(--text3); letter-spacing: 0.03em;
-  white-space: nowrap;
+  font-family: var(--fm); font-size: 12px;
+  color: var(--text3); letter-spacing: 0.02em; white-space: nowrap;
 }
+
 .rule {
   height: 1px;
   background: linear-gradient(90deg, transparent, var(--border2) 15%, var(--border2) 85%, transparent);
 }
+
 .tag-nav {
-  display: flex; align-items: center; gap: 3px;
-  padding: 8px 0; overflow-x: auto; scrollbar-width: none;
+  display: flex; align-items: center; gap: 4px;
+  padding: 9px 0; overflow-x: auto; scrollbar-width: none;
 }
 .tag-nav::-webkit-scrollbar { display: none; }
 
 .tag-pill {
-  padding: 3px 9px;
+  padding: 4px 11px;
   border: 1px solid var(--border);
   border-radius: 2px;
   background: transparent;
   color: var(--text3);
-  font-family: var(--fm); font-size: 10.5px; font-weight: 500;
+  font-family: var(--fm); font-size: 11.5px; font-weight: 500;
   letter-spacing: 0.06em; text-transform: uppercase;
   cursor: pointer; white-space: nowrap;
   transition: color 0.12s, border-color 0.12s, background 0.12s;
 }
 .tag-pill:hover { color: var(--text); border-color: var(--border2); }
-.tag-pill.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.tag-pill.active {
+  background: var(--accent); border-color: var(--accent); color: #fff;
+}
 .tag-pill.active-tag {
   background: color-mix(in srgb, var(--tc) 18%, transparent);
   border-color: color-mix(in srgb, var(--tc) 50%, transparent);
   color: var(--tc);
 }
-.pill-count { opacity: 0.55; margin-left: 4px; font-size: 9.5px; }
+.pill-count { opacity: 0.5; margin-left: 5px; font-size: 10px; }
 
 .search-wrap { margin-left: auto; flex-shrink: 0; }
 .search-input {
-  width: 170px; padding: 3px 10px;
+  width: 180px; padding: 4px 12px;
   border: 1px solid var(--border); border-radius: 2px;
   background: var(--s1); color: var(--text);
-  font-family: var(--fm); font-size: 11px;
+  font-family: var(--fm); font-size: 12px;
   outline: none; transition: border-color 0.15s;
 }
 .search-input::placeholder { color: var(--text3); }
 .search-input:focus { border-color: var(--accent); }
 
-/* ── Shell ─────────────────────────────────────────────────── */
-.shell { max-width: 1440px; margin: 0 auto; padding: 32px 28px 80px; }
+/* ── Shell ─────────────────────────────────────────── */
+.shell {
+  max-width: 1440px; margin: 0 auto;
+  padding: 28px 24px 80px;
+}
 
 .front {
   display: grid;
-  grid-template-columns: 1fr 296px;
-  gap: 24px;
-  margin-bottom: 40px;
+  grid-template-columns: 1fr 308px;
+  gap: 20px;
+  margin-bottom: 36px;
   align-items: start;
 }
-@media (max-width: 1100px) { .front { grid-template-columns: 1fr; } .sidebar { display: none; } }
+@media (max-width: 1080px) { .front { grid-template-columns: 1fr; } .sidebar { display: none; } }
 
-.hero-col { display: flex; flex-direction: column; gap: 16px; }
-.sec-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-@media (max-width: 640px) { .sec-row { grid-template-columns: 1fr; } }
+.hero-col { display: flex; flex-direction: column; gap: 14px; }
+.sec-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 600px) { .sec-row { grid-template-columns: 1fr; } }
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(288px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
 }
 
-/* ── Skeletons ──────────────────────────────────────────────── */
+/* ── Skeletons ─────────────────────────────────────── */
 .skel-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(288px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
 }
 @keyframes shimmer {
   0%   { background-position: -600px 0; }
   100% { background-position: 600px 0; }
 }
 .skel {
-  height: 170px; border-radius: 3px;
+  height: 180px; border-radius: 3px;
   background: linear-gradient(90deg, var(--s1) 25%, var(--s2) 50%, var(--s1) 75%);
   background-size: 1200px 100%;
   animation: shimmer 1.8s ease-in-out infinite;
 }
 
-/* ── Empty ──────────────────────────────────────────────────── */
-.empty { text-align: center; padding: 100px 0; color: var(--text3); }
+/* ── Empty ─────────────────────────────────────────── */
+.empty { text-align: center; padding: 100px 0; color: var(--text3); font-size: 16px; }
 .empty button {
-  margin-top: 12px; padding: 6px 18px;
+  margin-top: 14px; padding: 7px 20px;
   background: transparent; border: 1px solid var(--border2);
   border-radius: 2px; color: var(--text2);
-  font-family: var(--fm); font-size: 11px; cursor: pointer;
+  font-family: var(--fm); font-size: 12px; cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
 }
+.empty button:hover { border-color: var(--accent); color: var(--accent); }
 
-/* ── Footer ─────────────────────────────────────────────────── */
+/* ── Footer ────────────────────────────────────────── */
 .foot { border-top: 1px solid var(--border); background: var(--s1); }
 .foot-inner {
   max-width: 1440px; margin: 0 auto;
-  padding: 18px 28px;
+  padding: 20px 24px;
   display: flex; justify-content: space-between; align-items: center;
   flex-wrap: wrap; gap: 8px;
 }
-.foot-brand {
-  font-family: var(--fh); font-size: 13px; font-weight: 700;
-  letter-spacing: 0.05em;
-}
-.foot-note { font-family: var(--fm); font-size: 10.5px; color: var(--text3); }
+.foot-brand { font-family: var(--fh); font-size: 15px; font-weight: 700; letter-spacing: 0.05em; }
+.foot-note { font-family: var(--fm); font-size: 11px; color: var(--text3); }
 `;
