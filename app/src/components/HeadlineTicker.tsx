@@ -9,7 +9,7 @@ const INTERVAL = 5000;
 export default function HeadlineTicker({ stories }: Props) {
   const [idx, setIdx] = useState(0);
   const [fading, setFading] = useState(false);
-  const timer = useRef<ReturnType<typeof setTimeout>>();
+  const timer = useRef<number | undefined>(undefined);
 
   const advance = (next: number) => {
     setFading(true);
