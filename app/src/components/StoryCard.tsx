@@ -1,205 +1,236 @@
-import { useState } from 'react';
 import type { Story } from '../types/story';
-import { ExternalLink, Link2, Clock, Hash } from 'lucide-react';
+import { TAG_LABELS, TAG_COLORS } from '../pages/Home';
 
-interface StoryCardProps {
+interface Props {
   story: Story;
   onTagClick: (tag: string) => void;
-  featured?: boolean;
+  variant?: 'hero' | 'secondary' | 'card';
 }
 
-export default function StoryCard({ story, onTagClick, featured = false }: StoryCardProps) {
-  const [expanded, setExpanded] = useState(false);
+function timeAgo(iso: string): string {
+  try {
+    const diff = Date.now() - new Date(iso).getTime();
+    const m = Math.floor(diff / 60000);
+    if (m < 60) return `${m}m ago`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `${h}h ago`;
+    return `${Math.floor(h / 24)}d ago`;
+  } catch { return ''; }
+}
 
-  const tagLabel = story.tag.charAt(0).toUpperCase() + story.tag.slice(1);
-  const timeAgo = getTimeAgo(story.fetched_at);
-  // Use AI summary if available, fall back to raw excerpt so cards are never blank
-  const displayText = (story.summary && story.summary.trim())
-    ? story.summary
-    : story.excerpt
-      ? story.excerpt.slice(0, 200) + (story.excerpt.length > 200 ? '…' : '')
-      : null;
+export default function StoryCard({ story, onTagClick, variant = 'card' }: Props) {
+  const color = (story as any).color || TAG_COLORS[story.tag] || '#4f8ef7';
+  const label = TAG_LABELS[story.tag] || story.tag;
+  const ago = timeAgo(story.fetched_at);
+  const body = (story.summary && story.summary.trim()) ? story.summary : story.excerpt;
 
-  if (featured) {
+  if (variant === 'hero') {
     return (
-      <article className="group relative flex flex-col sm:flex-row rounded-xl border border-white/10 bg-card/60 backdrop-blur-sm overflow-hidden transition-all duration-300 hover:border-white/20 hover:bg-card/80 hover:shadow-2xl hover:shadow-black/30">
-        {/* Left accent bar */}
-        <div className="h-1 sm:h-auto sm:w-1.5 w-full shrink-0" style={{ backgroundColor: story.color }} />
-
-        <div className="flex flex-1 flex-col p-6 sm:p-8">
-          <div className="flex items-start justify-between gap-4 mb-4">
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => onTagClick(story.tag)}
-                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors hover:opacity-80"
-                style={{ backgroundColor: `${story.color}20`, color: story.color }}
-              >
-                <span>{story.emoji}</span>
-                <span className="uppercase tracking-wider">{tagLabel}</span>
+      <>
+        <style>{CARD_STYLES}</style>
+        <article className="card-hero">
+          <div className="hero-accent" style={{ background: `linear-gradient(135deg, ${color}22, ${color}08)` }} />
+          <div className="hero-bar" style={{ background: color }} />
+          <div className="hero-body">
+            <div className="card-meta">
+              <button className="tag-badge" style={{ '--c': color } as React.CSSProperties} onClick={() => onTagClick(story.tag)}>
+                {(story as any).emoji || '●'} {label}
               </button>
-              <span className="text-xs font-mono text-muted-foreground/60 uppercase tracking-wider">
-                Top signal
-              </span>
+              <span className="card-source">{story.source}</span>
+              <span className="card-time">{ago}</span>
             </div>
-            <span className="flex items-center gap-1 text-xs text-muted-foreground font-mono shrink-0">
-              <Clock className="w-3 h-3" />
-              {timeAgo}
-            </span>
-          </div>
-
-          <h2 className="text-xl font-semibold leading-snug mb-3 group-hover:text-primary transition-colors">
-            <a
-              href={story.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:underline underline-offset-2 decoration-primary/40"
-            >
-              {story.title}
-            </a>
-          </h2>
-
-          {displayText && (
-            <p className="text-sm text-muted-foreground leading-relaxed mb-6 max-w-2xl">
-              {displayText}
-            </p>
-          )}
-
-          <div className="mt-auto flex items-center justify-between gap-2 pt-4 border-t border-white/5">
-            <span className="text-xs text-muted-foreground font-mono">{story.source}</span>
-            <a
-              href={story.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors"
-            >
-              <ExternalLink className="w-3 h-3" />
-              Read
+            <h1 className="hero-title">
+              <a href={story.url} target="_blank" rel="noopener noreferrer">{story.title}</a>
+            </h1>
+            {body && <p className="hero-excerpt">{body.slice(0, 280)}{body.length > 280 ? '…' : ''}</p>}
+            <a className="read-link" href={story.url} target="_blank" rel="noopener noreferrer">
+              Read story →
             </a>
           </div>
-        </div>
-      </article>
+        </article>
+      </>
     );
   }
 
-  return (
-    <article className="group relative flex flex-col rounded-xl border border-white/5 bg-card/50 backdrop-blur-sm overflow-hidden transition-all duration-300 hover:border-white/10 hover:bg-card/80 hover:shadow-2xl hover:shadow-black/20">
-      {/* Color accent bar */}
-      <div className="h-0.5 w-full" style={{ backgroundColor: story.color }} />
-
-      <div className="flex flex-1 flex-col p-4">
-        {/* Header */}
-        <div className="flex items-start justify-between gap-3 mb-3">
-          <button
-            onClick={() => onTagClick(story.tag)}
-            className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium transition-colors hover:opacity-80 shrink-0"
-            style={{ backgroundColor: `${story.color}15`, color: story.color }}
-          >
-            <span>{story.emoji}</span>
-            <span className="uppercase tracking-wider">{tagLabel}</span>
-          </button>
-          <span className="flex items-center gap-1 text-xs text-muted-foreground font-mono shrink-0">
-            <Clock className="w-3 h-3" />
-            {timeAgo}
-          </span>
-        </div>
-
-        {/* Title */}
-        <h3 className="text-sm font-semibold leading-snug mb-2 group-hover:text-primary transition-colors line-clamp-2">
-          <a
-            href={story.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:underline underline-offset-2 decoration-primary/40"
-          >
-            {story.title}
-          </a>
-        </h3>
-
-        {/* Body text — summary preferred, excerpt as fallback */}
-        {displayText && (
-          <p className="text-xs text-muted-foreground leading-relaxed mb-3 line-clamp-3">
-            {displayText}
-          </p>
-        )}
-
-        {/* Source & Actions */}
-        <div className="mt-auto flex items-center justify-between gap-2 pt-3 border-t border-white/5">
-          <span className="text-xs text-muted-foreground font-mono truncate">{story.source}</span>
-          <div className="flex items-center gap-1 shrink-0">
-            {story.related && story.related.length > 0 && (
-              <button
-                onClick={() => setExpanded(!expanded)}
-                className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors"
-              >
-                <Link2 className="w-3 h-3" />
-                {story.related.length}
+  if (variant === 'secondary') {
+    return (
+      <>
+        <style>{CARD_STYLES}</style>
+        <article className="card-sec">
+          <div className="sec-bar" style={{ background: color }} />
+          <div className="sec-body">
+            <div className="card-meta">
+              <button className="tag-badge sm" style={{ '--c': color } as React.CSSProperties} onClick={() => onTagClick(story.tag)}>
+                {label}
               </button>
-            )}
-            <a
-              href={story.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors"
-            >
-              <ExternalLink className="w-3 h-3" />
-            </a>
+              <span className="card-time">{ago}</span>
+            </div>
+            <h2 className="sec-title">
+              <a href={story.url} target="_blank" rel="noopener noreferrer">{story.title}</a>
+            </h2>
+            {body && <p className="sec-excerpt">{body.slice(0, 140)}{body.length > 140 ? '…' : ''}</p>}
+            <span className="card-source sm">{story.source}</span>
+          </div>
+        </article>
+      </>
+    );
+  }
+
+  // card variant
+  return (
+    <>
+      <style>{CARD_STYLES}</style>
+      <article className="card">
+        <div className="card-top-bar" style={{ background: color }} />
+        <div className="card-inner">
+          <div className="card-meta">
+            <button className="tag-badge sm" style={{ '--c': color } as React.CSSProperties} onClick={() => onTagClick(story.tag)}>
+              {label}
+            </button>
+            <span className="card-time">{ago}</span>
+          </div>
+          <h3 className="card-title">
+            <a href={story.url} target="_blank" rel="noopener noreferrer">{story.title}</a>
+          </h3>
+          {body && <p className="card-excerpt">{body.slice(0, 160)}{body.length > 160 ? '…' : ''}</p>}
+          <div className="card-footer">
+            <span className="card-source sm">{story.source}</span>
+            <a className="card-arrow" href={story.url} target="_blank" rel="noopener noreferrer">→</a>
           </div>
         </div>
-
-        {/* Related stories */}
-        {expanded && story.related && story.related.length > 0 && (
-          <div className="mt-3 pt-3 border-t border-white/5 space-y-2">
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-mono uppercase tracking-wider">
-              <Hash className="w-3 h-3" />
-              Related
-            </div>
-            {story.related.map((r) => (
-              <a
-                key={r.story_id}
-                href={r.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block text-xs text-muted-foreground hover:text-primary transition-colors line-clamp-1"
-              >
-                <span
-                  className="inline-block w-1.5 h-1.5 rounded-full mr-2 align-middle"
-                  style={{ backgroundColor: TAG_COLORS[r.tag] || '#64748b' }}
-                />
-                {r.title}
-              </a>
-            ))}
-          </div>
-        )}
-      </div>
-    </article>
+      </article>
+    </>
   );
 }
 
-function getTimeAgo(isoString: string): string {
-  try {
-    const date = new Date(isoString);
-    const now = new Date();
-    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-    if (seconds < 60) return 'now';
-    const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `${minutes}m`;
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours}h`;
-    const days = Math.floor(hours / 24);
-    return `${days}d`;
-  } catch {
-    return '';
-  }
+const CARD_STYLES = `
+/* Hero */
+.card-hero {
+  position: relative; overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 3px;
+  background: #0f1117;
+  transition: border-color 0.2s;
+}
+.card-hero:hover { border-color: rgba(255,255,255,0.16); }
+.hero-accent {
+  position: absolute; inset: 0; pointer-events: none;
+  border-radius: 3px;
+}
+.hero-bar { width: 3px; position: absolute; left: 0; top: 0; bottom: 0; }
+.hero-body { padding: 28px 28px 28px 34px; position: relative; }
+.hero-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(22px, 2.8vw, 34px);
+  font-weight: 900; line-height: 1.18;
+  letter-spacing: -0.01em;
+  margin: 10px 0 14px;
+}
+.hero-title a { color: #dde1ec; text-decoration: none; transition: color 0.15s; }
+.hero-title a:hover { color: #fff; }
+.hero-excerpt {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 15px; line-height: 1.65;
+  color: #8a8f9e; max-width: 72ch;
+  margin-bottom: 20px;
+}
+.read-link {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11.5px; letter-spacing: 0.05em;
+  color: var(--accent, #4f8ef7);
+  text-decoration: none; font-weight: 500;
+  transition: opacity 0.15s;
+}
+.read-link:hover { opacity: 0.75; }
+
+/* Secondary */
+.card-sec {
+  position: relative; overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 3px; background: #0f1117;
+  transition: border-color 0.2s, background 0.2s;
+  display: flex; flex-direction: column;
+}
+.card-sec:hover { border-color: rgba(255,255,255,0.14); background: #13161d; }
+.sec-bar { height: 2px; width: 100%; flex-shrink: 0; }
+.sec-body { padding: 18px 18px 20px; flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.sec-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 17px; font-weight: 700;
+  line-height: 1.3; letter-spacing: -0.005em;
+}
+.sec-title a { color: #dde1ec; text-decoration: none; transition: color 0.15s; }
+.sec-title a:hover { color: #fff; }
+.sec-excerpt {
+  font-size: 13px; line-height: 1.6; color: #767c8e; flex: 1;
 }
 
-const TAG_COLORS: Record<string, string> = {
-  space: '#3b82f6',
-  lunar: '#8b5cf6',
-  ai: '#10b981',
-  robotics: '#f59e0b',
-  drones: '#06b6d4',
-  '3dprint': '#ec4899',
-  futurology: '#f97316',
-  tech: '#64748b',
-  youtube: '#ef4444',
-};
+/* Regular card */
+.card {
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 3px; background: #0f1117;
+  transition: border-color 0.2s, background 0.2s, transform 0.15s;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.card:hover {
+  border-color: rgba(255,255,255,0.12);
+  background: #121519;
+  transform: translateY(-1px);
+}
+.card-top-bar { height: 2px; width: 100%; }
+.card-inner { padding: 16px 16px 14px; flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.card-title {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 14.5px; font-weight: 600;
+  line-height: 1.4; letter-spacing: -0.005em;
+}
+.card-title a { color: #cdd1de; text-decoration: none; transition: color 0.15s; }
+.card-title a:hover { color: #fff; }
+.card-excerpt {
+  font-size: 12.5px; line-height: 1.6; color: #666c7e; flex: 1;
+}
+.card-footer {
+  display: flex; align-items: center;
+  justify-content: space-between; gap: 8px;
+  margin-top: 4px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+.card-arrow {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px; color: #4a5063;
+  text-decoration: none; transition: color 0.15s;
+}
+.card-arrow:hover { color: #4f8ef7; }
+
+/* Shared */
+.card-meta {
+  display: flex; align-items: center; gap: 8px;
+  flex-wrap: wrap;
+}
+.tag-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px; border-radius: 2px;
+  border: 1px solid color-mix(in srgb, var(--c) 35%, transparent);
+  background: color-mix(in srgb, var(--c) 12%, transparent);
+  color: var(--c);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px; font-weight: 500;
+  letter-spacing: 0.07em; text-transform: uppercase;
+  cursor: pointer; transition: opacity 0.15s;
+}
+.tag-badge:hover { opacity: 0.8; }
+.tag-badge.sm { font-size: 9.5px; padding: 1.5px 7px; }
+
+.card-source {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10.5px; color: #4a5063; letter-spacing: 0.02em;
+}
+.card-source.sm { font-size: 10px; }
+.card-time {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px; color: #3d4254;
+  margin-left: auto;
+}
+`;
