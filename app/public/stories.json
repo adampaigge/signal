@@ -2724,12 +2724,12 @@
   "clusters": [
     {
       "cluster_id": "d22fc626",
-      "generated_at": "2026-04-22T21:11:54.778089+00:00",
+      "generated_at": "2026-04-22T21:13:25.074110+00:00",
       "dominant_tags": [
         "space"
       ],
       "story_count": 7,
-      "observation": "Blue Origin's New Glenn now enters a high-reliability regime where booster recovery is no longer an experimental milestone but a routine operational constraint, signaling the transition from demonstration to commercial viability. Simultaneously, SpaceX consolidates its orbital dominance with Starlink launches, forcing the market toward a bifurcation where only proven reuse architectures can sus...",
+      "observation": "Blue Origin's decision to reuse the first New Glenn booster on its third flight while SpaceX continues launching Starlink with fresh Falcon 9 cores signals a strategic divergence in reusability economics. This convergence proves that high-value orbital access no longer requires full vehicle recovery, validating Blue Origin's path toward lower-cost LEO delivery through partial hardware cycling w...",
       "stories": [
         {
           "story_id": "9060a9ab548c3c3f937137b3ed7325b69057223721b2e67b898cde7707c31df6",
@@ -2797,6 +2797,6 @@
       ]
     }
   ],
-  "exported_at": "2026-04-22T21:11:54.964797+00:00",
+  "exported_at": "2026-04-22T21:13:25.278854+00:00",
   "featured": []
 }
