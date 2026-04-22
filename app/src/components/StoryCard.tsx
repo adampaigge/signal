@@ -31,6 +31,11 @@ export default function StoryCard({ story, onTagClick, variant = 'card' }: Props
         <style>{STYLES}</style>
         <article className="card-hero" style={{ '--c': color } as React.CSSProperties}>
           <div className="hero-glow" />
+          {(story as any).og_image && (
+            <div className="hero-img-wrap">
+              <img className="hero-img" src={(story as any).og_image} alt="" loading="lazy" />
+            </div>
+          )}
           <div className="hero-bar" style={{ background: color }} />
           <div className="hero-body">
             <div className="meta-row">
@@ -92,6 +97,9 @@ export default function StoryCard({ story, onTagClick, variant = 'card' }: Props
       <style>{STYLES}</style>
       <article className="card" style={{ '--c': color } as React.CSSProperties}>
         <div className="card-bar" style={{ background: color }} />
+        {(story as any).og_image && (
+          <img className="card-img" src={(story as any).og_image} alt="" loading="lazy" />
+        )}
         <div className="card-body">
           <div className="meta-row tight">
             <button className="badge sm" onClick={() => onTagClick(story.tag)}>
@@ -118,6 +126,26 @@ export default function StoryCard({ story, onTagClick, variant = 'card' }: Props
 }
 
 const STYLES = `
+/* ── OG Images ─────────────────────────────────────── */
+.hero-img-wrap {
+  width: 100%; height: 220px; overflow: hidden;
+  position: relative;
+}
+.hero-img {
+  width: 100%; height: 100%; object-fit: cover;
+  display: block;
+  filter: brightness(0.8) saturate(0.9);
+  transition: filter 0.3s;
+}
+.card-hero:hover .hero-img { filter: brightness(0.9) saturate(1.0); }
+.card-img {
+  width: 100%; height: 130px; object-fit: cover;
+  display: block;
+  filter: brightness(0.75) saturate(0.85);
+  transition: filter 0.25s;
+}
+.card:hover .card-img { filter: brightness(0.88) saturate(0.95); }
+
 /* ── Hero ──────────────────────────────────────────── */
 .card-hero {
   position: relative; overflow: hidden;

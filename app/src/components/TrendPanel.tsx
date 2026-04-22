@@ -1,218 +1,73 @@
-import { useState, useEffect, useMemo } from 'react';
-import type { Story } from '../types/story';
-import { TAG_LABELS, TAG_COLORS } from '../pages/Home';
+import type { ClusterData } from '../pages/Home';
+import { TAG_COLORS, TAG_LABELS } from '../pages/Home';
 
-interface Props {
-  stories: Story[];
+interface Props { clusters: ClusterData[]; }
+
+function timeAgo(iso: string): string {
+  try {
+    const h = Math.floor((Date.now() - new Date(iso).getTime()) / 3600000);
+    if (h < 1) return 'just now';
+    if (h < 24) return `${h}h ago`;
+    return `${Math.floor(h / 24)}d ago`;
+  } catch { return ''; }
 }
 
-interface TrendInsight {
-  id: string;
-  type: 'surge' | 'crossover' | 'velocity' | 'cluster';
-  headline: string;
-  detail: string;
-  tags: string[];
-  score: number;
-  expiresAt: number; // timestamp
-}
-
-// ── Compute real insights from story data ─────────────────────
-function computeInsights(stories: Story[]): TrendInsight[] {
-  if (stories.length < 4) return [];
-
-  const now = Date.now();
-  const insights: TrendInsight[] = [];
-
-  // 1. Tag velocity: which tags have the most stories in the last 12h vs 12-48h?
-  const recent12h = stories.filter(s => now - new Date(s.fetched_at).getTime() < 12 * 3600 * 1000);
-  const prev12_48h = stories.filter(s => {
-    const age = now - new Date(s.fetched_at).getTime();
-    return age >= 12 * 3600 * 1000 && age < 48 * 3600 * 1000;
-  });
-
-  const recentCounts: Record<string, number> = {};
-  const prevCounts: Record<string, number> = {};
-  recent12h.forEach(s => { recentCounts[s.tag] = (recentCounts[s.tag] || 0) + 1; });
-  prev12_48h.forEach(s => { prevCounts[s.tag] = (prevCounts[s.tag] || 0) + 1; });
-
-  const velocities: Array<{ tag: string; ratio: number; count: number }> = [];
-  for (const [tag, count] of Object.entries(recentCounts)) {
-    const prev = prevCounts[tag] || 0.5;
-    const ratio = count / prev;
-    if (ratio >= 1.5 && count >= 2) {
-      velocities.push({ tag, ratio, count });
-    }
-  }
-  velocities.sort((a, b) => b.ratio - a.ratio);
-  if (velocities[0]) {
-    const { tag, ratio, count } = velocities[0];
-    insights.push({
-      id: `vel-${tag}`,
-      type: 'velocity',
-      headline: `${TAG_LABELS[tag] || tag} signal rising`,
-      detail: `${count} stories in the last 12h — ${ratio.toFixed(1)}× the prior period. Something is moving.`,
-      tags: [tag],
-      score: ratio * count,
-      expiresAt: now + 3 * 3600 * 1000,
-    });
-  }
-
-  // 2. Cross-tag co-occurrence: which tags appear together in story clusters?
-  // Simple proxy: find stories whose titles share significant words across tags
-  const tagWords: Record<string, Set<string>> = {};
-  stories.slice(0, 80).forEach(s => {
-    if (!tagWords[s.tag]) tagWords[s.tag] = new Set();
-    s.title.toLowerCase().split(/\s+/).filter(w => w.length > 5).forEach(w => {
-      tagWords[s.tag].add(w);
-    });
-  });
-
-  const tagList = Object.keys(tagWords);
-  for (let i = 0; i < tagList.length; i++) {
-    for (let j = i + 1; j < tagList.length; j++) {
-      const a = tagList[i], b = tagList[j];
-      if (a === b) continue;
-      const overlap = [...tagWords[a]].filter(w => tagWords[b].has(w));
-      if (overlap.length >= 2) {
-        const shared = overlap.slice(0, 3).join(', ');
-        insights.push({
-          id: `cross-${a}-${b}`,
-          type: 'crossover',
-          headline: `${TAG_LABELS[a] || a} × ${TAG_LABELS[b] || b} overlap`,
-          detail: `Shared themes: "${shared}". Cross-domain convergence often signals a capability shift.`,
-          tags: [a, b],
-          score: overlap.length * 1.5,
-          expiresAt: now + 6 * 3600 * 1000,
-        });
-      }
-    }
-  }
-
-  // 3. Dominant source surge: any single source producing disproportionate volume?
-  const sourceCounts: Record<string, { count: number; tag: string }> = {};
-  recent12h.forEach(s => {
-    if (!sourceCounts[s.source]) sourceCounts[s.source] = { count: 0, tag: s.tag };
-    sourceCounts[s.source].count++;
-  });
-  const topSource = Object.entries(sourceCounts)
-    .filter(([, v]) => v.count >= 3)
-    .sort((a, b) => b[1].count - a[1].count)[0];
-
-  if (topSource) {
-    const [src, { count, tag }] = topSource;
-    insights.push({
-      id: `src-${src}`,
-      type: 'surge',
-      headline: `${src} surging`,
-      detail: `${count} stories indexed in the last 12h from this source — notably above baseline.`,
-      tags: [tag],
-      score: count,
-      expiresAt: now + 4 * 3600 * 1000,
-    });
-  }
-
-  // 4. Story cluster by keyword proximity
-  const keywordMap: Record<string, Story[]> = {};
-  stories.slice(0, 100).forEach(s => {
-    const words = s.title.toLowerCase().match(/\b[a-z]{6,}\b/g) || [];
-    words.forEach(w => {
-      if (!keywordMap[w]) keywordMap[w] = [];
-      keywordMap[w].push(s);
-    });
-  });
-
-  const hotWords = Object.entries(keywordMap)
-    .filter(([, ss]) => ss.length >= 3 && new Set(ss.map(s => s.tag)).size >= 2)
-    .sort((a, b) => b[1].length - a[1].length)
-    .slice(0, 3);
-
-  hotWords.forEach(([word, ss]) => {
-    const tags = [...new Set(ss.map(s => s.tag))].slice(0, 3);
-    insights.push({
-      id: `cluster-${word}`,
-      type: 'cluster',
-      headline: `"${word}" clustering across ${tags.length} categories`,
-      detail: `${ss.length} stories referencing this across ${tags.map(t => TAG_LABELS[t] || t).join(', ')}. Pattern suggests emerging narrative.`,
-      tags,
-      score: ss.length * tags.length,
-      expiresAt: now + 8 * 3600 * 1000,
-    });
-  });
-
-  return insights
-    .filter(i => i.expiresAt > now)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 5);
-}
-
-const TYPE_LABELS: Record<string, string> = {
-  surge: 'SURGE', crossover: 'CROSSOVER', velocity: 'VELOCITY', cluster: 'CLUSTER',
-};
-const TYPE_COLORS: Record<string, string> = {
-  surge: '#f87171', crossover: '#a78bfa', velocity: '#34d399', cluster: '#fbbf24',
-};
-
-// Countdown to insight expiry
-function useCountdown(expiresAt: number) {
-  const [remaining, setRemaining] = useState(() => Math.max(0, expiresAt - Date.now()));
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setRemaining(Math.max(0, expiresAt - Date.now()));
-    }, 60000);
-    return () => clearInterval(interval);
-  }, [expiresAt]);
-  const h = Math.floor(remaining / 3600000);
-  const m = Math.floor((remaining % 3600000) / 60000);
-  return h > 0 ? `${h}h ${m}m` : `${m}m`;
-}
-
-function InsightItem({ insight }: { insight: TrendInsight }) {
-  const countdown = useCountdown(insight.expiresAt);
-  const typeColor = TYPE_COLORS[insight.type] || '#4f8ef7';
+function ClusterCard({ cluster }: { cluster: ClusterData }) {
+  const tags = cluster.dominant_tags.slice(0, 3);
 
   return (
-    <div className="insight">
-      <div className="insight-header">
-        <span className="insight-type" style={{ color: typeColor }}>
-          {TYPE_LABELS[insight.type]}
-        </span>
-        <span className="insight-timer" title="Insight expires in">{countdown}</span>
+    <div className="cluster-card">
+      <div className="cluster-header">
+        <div className="cluster-tags">
+          {tags.map(t => (
+            <span
+              key={t}
+              className="cluster-tag"
+              style={{ '--tc': TAG_COLORS[t] || '#4f8ef7' } as React.CSSProperties}
+            >
+              {TAG_LABELS[t] || t}
+            </span>
+          ))}
+        </div>
+        <span className="cluster-meta">{timeAgo(cluster.generated_at)}</span>
       </div>
-      <p className="insight-headline">{insight.headline}</p>
-      <p className="insight-detail">{insight.detail}</p>
-      <div className="insight-tags">
-        {insight.tags.map(t => (
-          <span key={t} className="insight-tag" style={{ '--tc': TAG_COLORS[t] || '#4f8ef7' } as React.CSSProperties}>
-            {TAG_LABELS[t] || t}
-          </span>
+
+      {/* LLM observation — pre-computed by bot */}
+      {cluster.observation && (
+        <div className="synthesis-result">
+          <p className="synthesis-text">{cluster.observation}</p>
+        </div>
+      )}
+
+      {/* Source stories */}
+      <ul className="cluster-stories">
+        {cluster.stories.slice(0, 4).map(s => (
+          <li key={s.story_id}>
+            <a href={s.url} target="_blank" rel="noopener noreferrer">
+              {s.title}
+            </a>
+            <span className="story-source">{s.source}</span>
+          </li>
         ))}
-      </div>
-      <div className="insight-decay">
-        <div
-          className="insight-decay-bar"
-          style={{
-            width: `${Math.max(2, ((insight.expiresAt - Date.now()) / (8 * 3600 * 1000)) * 100)}%`,
-            background: typeColor,
-          }}
-        />
-      </div>
+        {cluster.stories.length > 4 && (
+          <li className="cluster-more">+{cluster.stories.length - 4} more signals</li>
+        )}
+      </ul>
     </div>
   );
 }
 
-export default function TrendPanel({ stories }: Props) {
-  const insights = useMemo(() => computeInsights(stories), [stories]);
-
-  if (insights.length === 0) {
+export default function TrendPanel({ clusters }: Props) {
+  if (!clusters || clusters.length === 0) {
     return (
       <>
         <style>{PANEL_STYLES}</style>
         <div className="trend-panel">
           <div className="panel-head">
-            <span className="panel-label">SIGNAL TRENDS</span>
+            <span className="panel-label">SIGNAL CLUSTERS</span>
           </div>
           <div className="panel-empty">
-            <p>Trend analysis requires more indexed stories. Check back after the next bot cycle.</p>
+            Vector clustering requires 48h of indexed stories. Check back after the next bot cycle.
           </div>
         </div>
       </>
@@ -224,14 +79,16 @@ export default function TrendPanel({ stories }: Props) {
       <style>{PANEL_STYLES}</style>
       <div className="trend-panel">
         <div className="panel-head">
-          <span className="panel-label">SIGNAL TRENDS</span>
-          <span className="panel-meta">{insights.length} active</span>
+          <span className="panel-label">SIGNAL CLUSTERS</span>
+          <span className="panel-meta">{clusters.length} patterns</span>
         </div>
-        <div className="insights-list">
-          {insights.map(i => <InsightItem key={i.id} insight={i} />)}
+        <div className="clusters-list">
+          {clusters.map(cluster => (
+            <ClusterCard key={cluster.cluster_id} cluster={cluster} />
+          ))}
         </div>
         <div className="panel-foot">
-          Insights computed from {stories.length} indexed stories · time-limited
+          Cross-domain patterns · semantic vector analysis · 48h window
         </div>
       </div>
     </>
@@ -241,85 +98,78 @@ export default function TrendPanel({ stories }: Props) {
 const PANEL_STYLES = `
 .trend-panel {
   border: 1px solid rgba(255,255,255,0.07);
-  border-radius: 3px;
-  background: #0c0e14;
-  overflow: hidden;
+  border-radius: 3px; background: #0a0c12; overflow: hidden;
 }
 .panel-head {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 12px 14px 10px;
+  padding: 11px 14px 9px;
   border-bottom: 1px solid rgba(255,255,255,0.06);
-  background: #0f1117;
+  background: #0d0f17;
 }
 .panel-label {
   font-family: 'IBM Plex Mono', monospace;
   font-size: 9.5px; font-weight: 500;
-  letter-spacing: 0.14em; color: #5e6372;
-  text-transform: uppercase;
+  letter-spacing: 0.14em; color: #4f8ef7; text-transform: uppercase;
 }
-.panel-meta {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 9px; color: #3d4254;
+.panel-meta { font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: #383d50; }
+.panel-empty { padding: 20px 14px; font-size: 12.5px; color: #3d4254; line-height: 1.6; }
+.panel-foot {
+  padding: 8px 14px;
+  font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: #272c3a;
+  border-top: 1px solid rgba(255,255,255,0.04); background: #09090f;
 }
-.insights-list { display: flex; flex-direction: column; }
-.insight {
-  padding: 14px 14px 12px;
+
+.clusters-list { display: flex; flex-direction: column; }
+.cluster-card {
+  padding: 14px;
   border-bottom: 1px solid rgba(255,255,255,0.04);
-  transition: background 0.15s;
+  display: flex; flex-direction: column; gap: 10px;
 }
-.insight:last-child { border-bottom: none; }
-.insight:hover { background: rgba(255,255,255,0.02); }
-.insight-header {
-  display: flex; align-items: center;
-  justify-content: space-between; margin-bottom: 5px;
-}
-.insight-type {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 9px; font-weight: 500;
-  letter-spacing: 0.12em; text-transform: uppercase;
-}
-.insight-timer {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 9px; color: #3d4254;
-}
-.insight-headline {
-  font-family: 'IBM Plex Sans', sans-serif;
-  font-size: 13px; font-weight: 600;
-  line-height: 1.3; color: #c8ccda;
-  margin-bottom: 5px;
-}
-.insight-detail {
-  font-size: 11.5px; line-height: 1.55; color: #565c6e;
-  margin-bottom: 8px;
-}
-.insight-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 8px; }
-.insight-tag {
-  padding: 1px 6px;
-  border-radius: 2px;
+.cluster-card:last-child { border-bottom: none; }
+
+.cluster-header { display: flex; align-items: center; justify-content: space-between; }
+.cluster-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+.cluster-tag {
+  padding: 2px 7px; border-radius: 2px;
   border: 1px solid color-mix(in srgb, var(--tc) 30%, transparent);
   background: color-mix(in srgb, var(--tc) 10%, transparent);
   color: var(--tc);
   font-family: 'IBM Plex Mono', monospace;
-  font-size: 9px; font-weight: 500;
-  letter-spacing: 0.06em; text-transform: uppercase;
+  font-size: 9.5px; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase;
 }
-.insight-decay {
-  height: 2px; background: rgba(255,255,255,0.04);
-  border-radius: 1px; overflow: hidden;
+.cluster-meta { font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: #383d50; }
+
+.synthesis-result {
+  border-left: 2px solid rgba(79,142,247,0.5);
+  padding: 8px 10px;
+  background: rgba(79,142,247,0.04);
+  border-radius: 0 2px 2px 0;
 }
-.insight-decay-bar {
-  height: 100%; border-radius: 1px;
-  transition: width 60s linear; opacity: 0.7;
+.synthesis-text {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13px; line-height: 1.58; color: #b0b8cc;
 }
-.panel-empty {
-  padding: 20px 14px;
-  font-size: 12px; color: #3d4254; line-height: 1.6;
+
+.cluster-stories { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+.cluster-stories li {
+  display: flex; align-items: baseline; gap: 7px; min-width: 0;
 }
-.panel-foot {
-  padding: 8px 14px;
+.cluster-stories li::before {
+  content: '–'; color: #2d3244;
+  font-family: 'IBM Plex Mono', monospace; font-size: 10px; flex-shrink: 0;
+}
+.cluster-stories a {
+  font-size: 12px; color: #717888; text-decoration: none;
+  line-height: 1.4; transition: color 0.15s;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.cluster-stories a:hover { color: #bcc2d4; }
+.story-source {
   font-family: 'IBM Plex Mono', monospace;
-  font-size: 9px; color: #2d3040;
-  border-top: 1px solid rgba(255,255,255,0.04);
-  background: #0a0c11;
+  font-size: 9.5px; color: #2d3244; flex-shrink: 0; white-space: nowrap;
+}
+.cluster-more {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px; color: #2d3244; padding-left: 16px;
 }
 `;
