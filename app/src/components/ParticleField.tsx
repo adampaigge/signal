@@ -16,9 +16,10 @@ export default function ParticleField() {
   const raf = useRef<number>(0);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
+    const canvas = canvasRef.current!;
     if (!canvas) return;
     const ctx = canvas.getContext('2d')!;
+    const c = canvas; // stable non-null reference for nested functions
 
     const PARTICLE_COUNT = 80;
     const CONNECTION_DIST = 140;
@@ -26,15 +27,15 @@ export default function ParticleField() {
     const MOUSE_STRENGTH = 0.018;
 
     function resize() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      c.width = window.innerWidth;
+      c.height = window.innerHeight;
     }
 
     function init() {
       resize();
       particles.current = Array.from({ length: PARTICLE_COUNT }, () => ({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
+        x: Math.random() * c.width,
+        y: Math.random() * c.height,
         vx: (Math.random() - 0.5) * 0.25,
         vy: (Math.random() - 0.5) * 0.25,
         radius: Math.random() * 1.4 + 0.4,
@@ -43,7 +44,7 @@ export default function ParticleField() {
     }
 
     function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.clearRect(0, 0, c.width, c.height);
       const ps = particles.current;
       const mx = mouse.current.x;
       const my = mouse.current.y;
@@ -68,10 +69,10 @@ export default function ParticleField() {
         p.y += p.vy;
 
         // Wrap edges
-        if (p.x < 0) p.x = canvas.width;
-        if (p.x > canvas.width) p.x = 0;
-        if (p.y < 0) p.y = canvas.height;
-        if (p.y > canvas.height) p.y = 0;
+        if (p.x < 0) p.x = c.width;
+        if (p.x > c.width) p.x = 0;
+        if (p.y < 0) p.y = c.height;
+        if (p.y > c.height) p.y = 0;
       }
 
       // Draw connections

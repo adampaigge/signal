@@ -24,7 +24,6 @@ export default function StoryCard({ story, onTagClick, variant = 'card' }: Props
   const label = TAG_LABELS[story.tag] || story.tag;
   const ago = timeAgo(story.fetched_at);
   const body = (story.summary && story.summary.trim()) ? story.summary : story.excerpt;
-  const cv = `--c:${color}` as string;
 
   if (variant === 'hero') {
     return (
