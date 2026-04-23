@@ -5,6 +5,7 @@ import StoryCard from '../components/StoryCard';
 import TrendPanel from '../components/TrendPanel';
 import ParticleField from '../components/ParticleField';
 import HeadlineTicker from '../components/HeadlineTicker';
+import { Analytics } from "@vercel/analytics/next"
 
 interface StoriesPayload {
   stories: Story[];
