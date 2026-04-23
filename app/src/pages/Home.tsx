@@ -1,11 +1,10 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import type { Story } from '../types/story';
 import { demoStories } from '../data/demo-stories';
 import StoryCard from '../components/StoryCard';
 import TrendPanel from '../components/TrendPanel';
 import ParticleField from '../components/ParticleField';
 import HeadlineTicker from '../components/HeadlineTicker';
-
 
 interface StoriesPayload {
   stories: Story[];
@@ -36,10 +35,9 @@ function useStories() {
     fetch('/stories.json')
       .then(r => { if (!r.ok) throw new Error(); return r.json(); })
       .then((data: StoriesPayload | Story[]) => {
-        // Handle both new envelope format and legacy flat array
         if (Array.isArray(data)) {
           setStories(data.length > 0 ? data : demoStories);
-        } else if (data && Array.isArray(data.stories)) {
+        } else if (data?.stories) {
           setStories(data.stories.length > 0 ? data.stories : demoStories);
           setClusters(data.clusters || []);
           setFeatured(data.featured || []);
@@ -66,10 +64,14 @@ export const TAG_COLORS: Record<string, string> = {
   tech: '#9f7aea', youtube: '#f87171', tiktok: '#69C9D0', xr: '#7c3aed',
 };
 
+// Single accent for unified feel — tag colors only on dots/hovers
+export const ACCENT = '#e8611a'; // Supernova orange from logo
+
 export default function Home() {
   const { stories, clusters, featured, loading } = useStories();
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+  const headerRef = useRef<HTMLElement>(null);
 
   const tagCounts = useMemo(() => {
     const c: Record<string, number> = {};
@@ -103,42 +105,51 @@ export default function Home() {
     <>
       <style>{STYLES}</style>
       <ParticleField />
+
       <div className="snl-root">
-        <header className="masthead">
-          <div className="masthead-inner">
-            <div className="masthead-top">
-              <span className="edition-label">{dateStr}</span>
-              <div className="wordmark">
-                <img src="/logo.png" alt="Supernova Labs" className="wordmark-logo" />
-                <span className="wordmark-primary">THE SIGNAL</span>
-                <span className="wordmark-sub">by Supernova Labs</span>
+        {/* ── Masthead ──────────────────────────────────────── */}
+        <header ref={headerRef} className="masthead">
+          <div className="mast-inner">
+
+            <div className="mast-top">
+              <span className="mast-date">{dateStr}</span>
+              <div className="mast-wordmark">
+                <img src="/logo.png" alt="" className="mast-logo" />
+                <div className="mast-titles">
+                  <span className="mast-org">SUPERNOVA LABS</span>
+                  <span className="mast-name">SIGNAL</span>
+                </div>
               </div>
-              <span className="edition-label">{stories.length} stories</span>
+              <span className="mast-count">{stories.length}&thinsp;stories</span>
             </div>
-            <div className="rule" />
-            <nav className="tag-nav">
+
+            <div className="mast-rule" />
+
+            {/* Tag rail — underline style, not pills */}
+            <nav className="tag-rail">
               <button
-                className={`tag-pill ${!activeTag ? 'active' : ''}`}
+                className={`rail-item ${!activeTag ? 'rail-active' : ''}`}
                 onClick={() => setActiveTag(null)}
               >
-                All <span className="pill-count">{stories.length}</span>
+                All <sup className="rail-sup">{stories.length}</sup>
               </button>
               {Object.entries(tagCounts)
                 .sort((a, b) => b[1] - a[1])
                 .map(([tag, count]) => (
                   <button
                     key={tag}
-                    className={`tag-pill ${activeTag === tag ? 'active-tag' : ''}`}
-                    style={{ '--tc': TAG_COLORS[tag] || '#64748b' } as React.CSSProperties}
+                    className={`rail-item ${activeTag === tag ? 'rail-active' : ''}`}
+                    style={{ '--dot': TAG_COLORS[tag] || ACCENT } as React.CSSProperties}
                     onClick={() => setActiveTag(tag === activeTag ? null : tag)}
                   >
+                    <span className="rail-dot" />
                     {TAG_LABELS[tag] || tag}
-                    <span className="pill-count">{count}</span>
+                    <sup className="rail-sup">{count}</sup>
                   </button>
                 ))}
-              <div className="search-wrap">
+              <div className="rail-search">
                 <input
-                  className="search-input"
+                  className="search-field"
                   type="text"
                   placeholder="Search…"
                   value={search}
@@ -149,52 +160,57 @@ export default function Home() {
           </div>
         </header>
 
-        {/* Rolling headline ticker — today's Mastodon winners */}
+        {/* ── Ticker ────────────────────────────────────────── */}
         {featured.length > 0 && <HeadlineTicker stories={featured} />}
 
-        <main className="shell">
+        {/* ── Body ──────────────────────────────────────────── */}
+        <main className="body-shell">
           {loading ? (
-            <div className="skel-grid">
-              {Array.from({ length: 9 }).map((_, i) => (
-                <div key={i} className="skel" style={{ animationDelay: `${i * 0.07}s` }} />
+            <div className="skel-wrap">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="skel" style={{ animationDelay: `${i * 0.06}s` }} />
               ))}
             </div>
           ) : filtered.length === 0 ? (
-            <div className="empty">
-              <p>No stories match.</p>
-              <button onClick={() => { setActiveTag(null); setSearch(''); }}>Clear filters</button>
+            <div className="empty-state">
+              No stories match.
+              <button onClick={() => { setActiveTag(null); setSearch(''); }}>Clear</button>
             </div>
           ) : (
             <>
               {!activeTag && !search && hero && (
-                <section className="front">
-                  <div className="hero-col">
+                <section className="front-section">
+                  <div className="front-main">
                     <StoryCard story={hero} onTagClick={setActiveTag} variant="hero" />
-                    <div className="sec-row">
+                    <div className="sec-pair">
                       {secondary.map(s => (
                         <StoryCard key={s.story_id} story={s} onTagClick={setActiveTag} variant="secondary" />
                       ))}
                     </div>
                   </div>
-                  <aside className="sidebar">
+                  <aside className="front-aside">
                     <TrendPanel clusters={clusters} />
                   </aside>
                 </section>
               )}
-              <section className="grid">
-                {(activeTag || search ? filtered : grid).map(s => (
-                  <StoryCard key={s.story_id} story={s} onTagClick={setActiveTag} variant="card" />
+              <section className="card-grid">
+                {(activeTag || search ? filtered : grid).map((s, i) => (
+                  <StoryCard
+                    key={s.story_id}
+                    story={s}
+                    onTagClick={setActiveTag}
+                    variant="card"
+                    index={i}
+                  />
                 ))}
               </section>
             </>
           )}
         </main>
 
-        <footer className="foot">
-          <div className="foot-inner">
-            <span className="foot-brand">Supernova Labs · Home to the Dreamers</span>
-            <span className="foot-note">Built with love and determination, not by VC</span>
-          </div>
+        <footer className="site-foot">
+          <span className="foot-brand">Supernova Labs · Signal</span>
+          <span className="foot-note">Built with love and determination, not by VC</span>
         </footer>
       </div>
     </>
@@ -202,59 +218,204 @@ export default function Home() {
 }
 
 const STYLES = `
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,700;0,6..72,800;1,6..72,400;1,6..72,700&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap');
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
+
 :root {
-  --bg:#08090d; --s1:#0d0f15; --s2:#13161e; --s3:#191c26;
-  --border:rgba(255,255,255,0.07); --border2:rgba(255,255,255,0.13);
-  --text:#e2e6f3; --text2:#9aa0b4; --text3:#555b6e;
-  --accent:#4f8ef7; --accent2:#c84a0c;
-  --fh:'Playfair Display',Georgia,serif;
-  --fb:'IBM Plex Sans',system-ui,sans-serif;
-  --fm:'IBM Plex Mono',monospace;
+  --bg:        #07080c;
+  --ink:       #e4e7f2;
+  --ink2:      #8a90a6;
+  --ink3:      #42475a;
+  --surface:   #0c0e15;
+  --surface2:  #111420;
+  --rule:      rgba(255,255,255,0.08);
+  --rule2:     rgba(255,255,255,0.13);
+  --orange:    #e8611a;
+  --blue:      #4f8ef7;
+  --fh: 'Newsreader', Georgia, serif;
+  --fb: 'DM Sans', system-ui, sans-serif;
+  --fm: 'DM Mono', monospace;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
-body { background:var(--bg); color:var(--text); font-family:var(--fb); font-size:16px; }
-.snl-root { position:relative; z-index:1; min-height:100vh; }
 
-.masthead { position:sticky; top:0; z-index:50; background:rgba(8,9,13,0.92); backdrop-filter:blur(24px) saturate(1.6); border-bottom:1px solid var(--border2); }
-.masthead-inner { max-width:1440px; margin:0 auto; padding:0 24px; }
-.masthead-top { display:flex; align-items:center; justify-content:space-between; padding:16px 0 12px; gap:16px; }
-.wordmark { display:flex; flex-direction:column; align-items:center; gap:3px; }
-.wordmark-logo { width:32px; height:32px; object-fit:contain; margin-bottom:1px; }
-.wordmark-primary { font-family:var(--fh); font-size:30px; font-weight:900; letter-spacing:0.22em; background:linear-gradient(115deg,#e2e6f3 0%,#6baee8 45%,#c84a0c 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; line-height:1; }
-.wordmark-sub { font-family:var(--fm); font-size:10px; font-weight:500; letter-spacing:0.44em; color:var(--text3); text-transform:uppercase; }
-.edition-label { font-family:var(--fm); font-size:12px; color:var(--text3); letter-spacing:0.02em; white-space:nowrap; }
-.rule { height:1px; background:linear-gradient(90deg,transparent,var(--border2) 15%,var(--border2) 85%,transparent); }
-.tag-nav { display:flex; align-items:center; gap:4px; padding:9px 0; overflow-x:auto; scrollbar-width:none; }
-.tag-nav::-webkit-scrollbar { display:none; }
-.tag-pill { padding:4px 11px; border:1px solid var(--border); border-radius:2px; background:transparent; color:var(--text3); font-family:var(--fm); font-size:11.5px; font-weight:500; letter-spacing:0.06em; text-transform:uppercase; cursor:pointer; white-space:nowrap; transition:color 0.12s,border-color 0.12s,background 0.12s; }
-.tag-pill:hover { color:var(--text); border-color:var(--border2); }
-.tag-pill.active { background:var(--accent); border-color:var(--accent); color:#fff; }
-.tag-pill.active-tag { background:color-mix(in srgb,var(--tc) 18%,transparent); border-color:color-mix(in srgb,var(--tc) 50%,transparent); color:var(--tc); }
-.pill-count { opacity:0.5; margin-left:5px; font-size:10px; }
-.search-wrap { margin-left:auto; flex-shrink:0; }
-.search-input { width:180px; padding:4px 12px; border:1px solid var(--border); border-radius:2px; background:var(--s1); color:var(--text); font-family:var(--fm); font-size:12px; outline:none; transition:border-color 0.15s; }
-.search-input::placeholder { color:var(--text3); }
-.search-input:focus { border-color:var(--accent); }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--fb);
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
 
-.shell { max-width:1440px; margin:0 auto; padding:28px 24px 80px; }
-.front { display:grid; grid-template-columns:1fr 308px; gap:20px; margin-bottom:36px; align-items:start; }
-@media(max-width:1080px){.front{grid-template-columns:1fr}.sidebar{display:none}}
-.hero-col { display:flex; flex-direction:column; gap:14px; }
-.sec-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
-@media(max-width:600px){.sec-row{grid-template-columns:1fr}}
-.grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:12px; }
+.snl-root { position: relative; z-index: 1; min-height: 100vh; }
 
-.skel-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:12px; }
-@keyframes shimmer{0%{background-position:-600px 0}100%{background-position:600px 0}}
-.skel { height:180px; border-radius:3px; background:linear-gradient(90deg,var(--s1) 25%,var(--s2) 50%,var(--s1) 75%); background-size:1200px 100%; animation:shimmer 1.8s ease-in-out infinite; }
+/* ── Masthead ────────────────────────────────────────────────── */
+.masthead {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(7,8,12,0.94);
+  backdrop-filter: blur(28px) saturate(1.5);
+  border-bottom: 1px solid var(--rule2);
+}
+.mast-inner { max-width: 1480px; margin: 0 auto; padding: 0 28px; }
 
-.empty { text-align:center; padding:100px 0; color:var(--text3); font-size:16px; }
-.empty button { margin-top:14px; padding:7px 20px; background:transparent; border:1px solid var(--border2); border-radius:2px; color:var(--text2); font-family:var(--fm); font-size:12px; cursor:pointer; }
+.mast-top {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 0 11px; gap: 20px;
+}
 
-.foot { border-top:1px solid var(--border); background:var(--s1); }
-.foot-inner { max-width:1440px; margin:0 auto; padding:20px 24px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; }
-.foot-brand { font-family:var(--fh); font-size:15px; font-weight:700; letter-spacing:0.05em; }
-.foot-note { font-family:var(--fm); font-size:11px; color:var(--text3); }
+.mast-wordmark {
+  display: flex; align-items: center; gap: 12px;
+}
+.mast-logo {
+  width: 36px; height: 36px; object-fit: contain;
+  filter: drop-shadow(0 0 8px rgba(232,97,26,0.35));
+}
+.mast-titles {
+  display: flex; flex-direction: column; gap: 0;
+  line-height: 1;
+}
+.mast-org {
+  font-family: var(--fm); font-size: 9px; font-weight: 500;
+  letter-spacing: 0.28em; color: var(--orange);
+  text-transform: uppercase;
+}
+.mast-name {
+  font-family: var(--fh); font-size: 28px; font-weight: 800;
+  letter-spacing: -0.02em; color: var(--ink);
+  line-height: 1.05;
+}
+.mast-date {
+  font-family: var(--fm); font-size: 11px; color: var(--ink3);
+  letter-spacing: 0.02em; white-space: nowrap;
+}
+.mast-count {
+  font-family: var(--fm); font-size: 11px; color: var(--ink3);
+  white-space: nowrap;
+}
+.mast-rule {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--rule2) 12%, var(--rule2) 88%, transparent);
+}
+
+/* ── Tag rail ────────────────────────────────────────────────── */
+.tag-rail {
+  display: flex; align-items: center; gap: 0;
+  padding: 0; overflow-x: auto; scrollbar-width: none;
+}
+.tag-rail::-webkit-scrollbar { display: none; }
+
+.rail-item {
+  position: relative;
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 10px 14px;
+  background: transparent; border: none; border-bottom: 2px solid transparent;
+  color: var(--ink3);
+  font-family: var(--fm); font-size: 11px; font-weight: 500;
+  letter-spacing: 0.07em; text-transform: uppercase;
+  cursor: pointer; white-space: nowrap;
+  transition: color 0.15s, border-color 0.15s;
+}
+.rail-item:hover { color: var(--ink); }
+.rail-item.rail-active {
+  color: var(--ink);
+  border-bottom-color: var(--orange);
+}
+.rail-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--dot, var(--orange));
+  opacity: 0.5;
+  transition: opacity 0.15s;
+}
+.rail-item:hover .rail-dot,
+.rail-item.rail-active .rail-dot { opacity: 1; }
+.rail-sup {
+  font-size: 8.5px; font-weight: 400;
+  color: var(--ink3); vertical-align: super;
+  margin-left: 1px;
+}
+.rail-search { margin-left: auto; flex-shrink: 0; padding: 6px 0; }
+.search-field {
+  width: 160px; padding: 5px 12px;
+  border: 1px solid var(--rule); border-radius: 2px;
+  background: var(--surface); color: var(--ink);
+  font-family: var(--fm); font-size: 11px;
+  outline: none; transition: border-color 0.15s;
+}
+.search-field::placeholder { color: var(--ink3); }
+.search-field:focus { border-color: var(--orange); }
+
+/* ── Layout ──────────────────────────────────────────────────── */
+.body-shell {
+  max-width: 1480px; margin: 0 auto;
+  padding: 32px 28px 80px;
+}
+
+.front-section {
+  display: grid;
+  grid-template-columns: 1fr 310px;
+  gap: 24px; margin-bottom: 40px; align-items: start;
+}
+@media (max-width: 1100px) {
+  .front-section { grid-template-columns: 1fr; }
+  .front-aside { display: none; }
+}
+.front-main { display: flex; flex-direction: column; gap: 16px; }
+.sec-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 640px) { .sec-pair { grid-template-columns: 1fr; } }
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 14px;
+}
+
+/* ── Skeletons ───────────────────────────────────────────────── */
+.skel-wrap {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 14px;
+}
+@keyframes shimmer {
+  0%   { background-position: -700px 0; }
+  100% { background-position: 700px 0; }
+}
+.skel {
+  height: 180px; border-radius: 2px;
+  background: linear-gradient(90deg, var(--surface) 25%, var(--surface2) 50%, var(--surface) 75%);
+  background-size: 1400px 100%;
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+/* ── Empty ───────────────────────────────────────────────────── */
+.empty-state {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 14px; padding: 120px 0;
+  font-family: var(--fm); font-size: 12px; color: var(--ink3);
+}
+.empty-state button {
+  padding: 6px 18px; background: transparent;
+  border: 1px solid var(--rule2); border-radius: 2px;
+  color: var(--ink2); font-family: var(--fm); font-size: 11px;
+  cursor: pointer; transition: border-color 0.15s, color 0.15s;
+}
+.empty-state button:hover { border-color: var(--orange); color: var(--orange); }
+
+/* ── Footer ──────────────────────────────────────────────────── */
+.site-foot {
+  border-top: 1px solid var(--rule);
+  background: var(--surface);
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 8px;
+  padding: 20px 28px;
+  max-width: none;
+}
+.foot-brand {
+  font-family: var(--fh); font-size: 14px; font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.foot-note {
+  font-family: var(--fm); font-size: 10px; color: var(--ink3);
+}
 `;
