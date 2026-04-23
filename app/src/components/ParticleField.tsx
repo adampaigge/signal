@@ -24,7 +24,7 @@ export default function ParticleField() {
     const PARTICLE_COUNT = 100;
     const CONNECTION_DIST = 200;
     const MOUSE_RADIUS = 200;
-    const MOUSE_STRENGTH = 0.2;
+    const MOUSE_STRENGTH = -0.2;
 
     function resize() {
       c.width = window.innerWidth;
@@ -153,7 +153,7 @@ export default function ParticleField() {
         height: '100%',
         pointerEvents: 'none',
         zIndex: 0,
-        opacity: 0.85,
+        opacity: 0.9,
       }}
     />
   );
