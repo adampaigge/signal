@@ -2724,12 +2724,12 @@
   "clusters": [
     {
       "cluster_id": "d22fc626",
-      "generated_at": "2026-04-23T01:14:44.076874+00:00",
+      "generated_at": "2026-04-23T01:32:47.244791+00:00",
       "dominant_tags": [
         "space"
       ],
       "story_count": 7,
-      "observation": "Blue Origin's New Glenn third flight reusing its booster while SpaceX schedules Falcon 9 Starlink deployments signals the operational normalization of expendable-to-reusable transition. This convergence confirms that heavy-lift orbital access has shifted from developmental milestones to routine cadence, validating the economic viability of dual-source reusable infrastructure for constellation d...",
+      "observation": "Blue Origin's New Glenn booster reuse on flight three proves heavy-lift orbital access is no longer exclusive to SpaceX. As Falcon 9 and New Shepard handle niche payloads, New Glenn shifts to high-capacity Earth-to-orbit transport while Blue Origin retains ownership of the recovered hardware. This consolidation of launch capability accelerates the transition from experimental reusability to com...",
       "stories": [
         {
           "story_id": "9060a9ab548c3c3f937137b3ed7325b69057223721b2e67b898cde7707c31df6",
@@ -2797,6 +2797,6 @@
       ]
     }
   ],
-  "exported_at": "2026-04-23T01:14:44.386554+00:00",
+  "exported_at": "2026-04-23T01:32:47.464576+00:00",
   "featured": []
 }
