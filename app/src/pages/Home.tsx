@@ -110,7 +110,7 @@ export default function Home() {
               <div className="wordmark">
                 <img src="/logo.png" alt="Supernova Labs" className="wordmark-logo" />
                 <span className="wordmark-primary">THE SIGNAL</span>
-                <span className="wordmark-sub">Brought to you by Supernova Labs</span>
+                <span className="wordmark-sub">by Supernova Labs</span>
               </div>
               <span className="edition-label">{stories.length} stories</span>
             </div>
