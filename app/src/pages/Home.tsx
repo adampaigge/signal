@@ -210,7 +210,7 @@ export default function Home() {
 
         <footer className="site-foot">
           <span className="foot-brand">Supernova Labs · Home to the Dreamers</span>
-          <span className="foot-note">Built with love and determination, not by VC</span>
+          <span className="foot-note">Built with 💖 and determination, not by VC</span>
         </footer>
       </div>
     </>
