@@ -56,13 +56,13 @@ function useStories() {
 export const TAG_LABELS: Record<string, string> = {
   space: 'Space', lunar: 'Lunar', ai: 'AI', robotics: 'Robotics',
   drones: 'Drones', '3dprint': '3D Print', futurology: 'Futures',
-  tech: 'Tech', youtube: 'Video',
+  tech: 'Tech', youtube: 'Video', tiktok: 'TikTok', xr: 'XR',
 };
 
 export const TAG_COLORS: Record<string, string> = {
   space: '#4f8ef7', lunar: '#a78bfa', ai: '#34d399', robotics: '#fbbf24',
   drones: '#22d3ee', '3dprint': '#f472b6', futurology: '#fb923c',
-  tech: '#9f7aea', youtube: '#f87171',
+  tech: '#9f7aea', youtube: '#f87171', tiktok: '#69C9D0', xr: '#7c3aed',
 };
 
 export default function Home() {
@@ -108,6 +108,7 @@ export default function Home() {
             <div className="masthead-top">
               <span className="edition-label">{dateStr}</span>
               <div className="wordmark">
+                <img src="/logo.png" alt="Supernova Labs" className="wordmark-logo" />
                 <span className="wordmark-primary">SUPERNOVA</span>
                 <span className="wordmark-sub">SIGNAL</span>
               </div>
@@ -218,7 +219,8 @@ body { background:var(--bg); color:var(--text); font-family:var(--fb); font-size
 .masthead { position:sticky; top:0; z-index:50; background:rgba(8,9,13,0.92); backdrop-filter:blur(24px) saturate(1.6); border-bottom:1px solid var(--border2); }
 .masthead-inner { max-width:1440px; margin:0 auto; padding:0 24px; }
 .masthead-top { display:flex; align-items:center; justify-content:space-between; padding:16px 0 12px; gap:16px; }
-.wordmark { display:flex; flex-direction:column; align-items:center; gap:2px; }
+.wordmark { display:flex; flex-direction:column; align-items:center; gap:3px; }
+.wordmark-logo { width:32px; height:32px; object-fit:contain; margin-bottom:1px; }
 .wordmark-primary { font-family:var(--fh); font-size:30px; font-weight:900; letter-spacing:0.22em; background:linear-gradient(115deg,#e2e6f3 0%,#6baee8 45%,#c84a0c 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; line-height:1; }
 .wordmark-sub { font-family:var(--fm); font-size:10px; font-weight:500; letter-spacing:0.44em; color:var(--text3); text-transform:uppercase; }
 .edition-label { font-family:var(--fm); font-size:12px; color:var(--text3); letter-spacing:0.02em; white-space:nowrap; }
