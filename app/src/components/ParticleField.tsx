@@ -21,10 +21,10 @@ export default function ParticleField() {
     const ctx = canvas.getContext('2d')!;
     const c = canvas; // stable non-null reference for nested functions
 
-    const PARTICLE_COUNT = 80;
-    const CONNECTION_DIST = 140;
-    const MOUSE_RADIUS = 160;
-    const MOUSE_STRENGTH = 0.018;
+    const PARTICLE_COUNT = 100;
+    const CONNECTION_DIST = 200;
+    const MOUSE_RADIUS = 200;
+    const MOUSE_STRENGTH = 0.2;
 
     function resize() {
       c.width = window.innerWidth;
@@ -39,7 +39,7 @@ export default function ParticleField() {
         vx: (Math.random() - 0.5) * 0.25,
         vy: (Math.random() - 0.5) * 0.25,
         radius: Math.random() * 1.4 + 0.4,
-        opacity: Math.random() * 0.4 + 0.1,
+        opacity: Math.random() * 0.4 + 0.2,
       }));
     }
 
@@ -153,7 +153,7 @@ export default function ParticleField() {
         height: '100%',
         pointerEvents: 'none',
         zIndex: 0,
-        opacity: 0.65,
+        opacity: 0.75,
       }}
     />
   );
