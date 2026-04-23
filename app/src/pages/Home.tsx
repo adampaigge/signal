@@ -109,8 +109,8 @@ export default function Home() {
               <span className="edition-label">{dateStr}</span>
               <div className="wordmark">
                 <img src="/logo.png" alt="Supernova Labs" className="wordmark-logo" />
-                <span className="wordmark-primary">SUPERNOVA</span>
-                <span className="wordmark-sub">SIGNAL</span>
+                <span className="wordmark-primary">THE SIGNAL</span>
+                <span className="wordmark-sub">Brought to you by Supernova Labs</span>
               </div>
               <span className="edition-label">{stories.length} stories</span>
             </div>
@@ -191,7 +191,7 @@ export default function Home() {
 
         <footer className="foot">
           <div className="foot-inner">
-            <span className="foot-brand">Supernova Labs · Signal</span>
+            <span className="foot-brand">Supernova Labs · Home to the Dreamers</span>
             <span className="foot-note">Built with love and determination, not by VC</span>
           </div>
         </footer>
