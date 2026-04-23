@@ -65,6 +65,22 @@
       "hashtags": "#Space #Aerospace"
     },
     {
+      "story_id": "cbd2be3a13df9a88b144c643f48c02f840b9a98c59d83ffa6015f53626d40ff1",
+      "title": "This sub is not about Musk. it does not endorse him, nor does it attack him. We generally ignore him other than when it comes to direct SpaceX news.",
+      "url": "https://www.reddit.com/r/SpaceXLounge/comments/1i7s47l/this_sub_is_not_about_musk_it_does_not_endorse/",
+      "excerpt": "Be advised this sub utilizes \"crowd control\" for both comments and for posts. If you have little or negative karma here your post/comment may not appear unless manually approved which may take a little time. \n\nIf you are here just to make political comments and not discuss SpaceX, you will be banned without warning and ignored when you complain, so don't even bother trying, no one will see it anyw",
+      "tag": "space",
+      "source": "r/SpaceXLounge",
+      "source_type": "reddit",
+      "fetched_at": "2026-04-22T18:41:38.598658+00:00",
+      "summary": "",
+      "og_image": "",
+      "featured": false,
+      "emoji": "🚀",
+      "color": "#3b82f6",
+      "hashtags": "#Space #Aerospace"
+    },
+    {
       "story_id": "2b57e0268660b9b10d37a07b6de2fd1d2add33b6a435d51803a66520097e9862",
       "title": "Unpopular opinion: people won’t “return to authenticity” as AI gets better",
       "url": "https://www.reddit.com/r/singularity/comments/1ssh112/unpopular_opinion_people_wont_return_to/",
@@ -2708,12 +2724,12 @@
   "clusters": [
     {
       "cluster_id": "d22fc626",
-      "generated_at": "2026-04-22T21:13:25.074110+00:00",
+      "generated_at": "2026-04-23T01:14:44.076874+00:00",
       "dominant_tags": [
         "space"
       ],
       "story_count": 7,
-      "observation": "Blue Origin's decision to reuse the first New Glenn booster on its third flight while SpaceX continues launching Starlink with fresh Falcon 9 cores signals a strategic divergence in reusability economics. This convergence proves that high-value orbital access no longer requires full vehicle recovery, validating Blue Origin's path toward lower-cost LEO delivery through partial hardware cycling w...",
+      "observation": "Blue Origin's New Glenn third flight reusing its booster while SpaceX schedules Falcon 9 Starlink deployments signals the operational normalization of expendable-to-reusable transition. This convergence confirms that heavy-lift orbital access has shifted from developmental milestones to routine cadence, validating the economic viability of dual-source reusable infrastructure for constellation d...",
       "stories": [
         {
           "story_id": "9060a9ab548c3c3f937137b3ed7325b69057223721b2e67b898cde7707c31df6",
@@ -2781,6 +2797,6 @@
       ]
     }
   ],
-  "exported_at": "2026-04-22T21:13:25.278854+00:00",
+  "exported_at": "2026-04-23T01:14:44.386554+00:00",
   "featured": []
 }
