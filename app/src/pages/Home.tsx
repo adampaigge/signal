@@ -117,7 +117,7 @@ export default function Home() {
                 <img src="/logo.png" alt="" className="mast-logo" />
                 <div className="mast-titles">
                   <span className="mast-org">SUPERNOVA LABS</span>
-                  <span className="mast-name">SIGNAL</span>
+                  <span className="mast-name">THE SIGNAL</span>
                 </div>
               </div>
               <span className="mast-count">{stories.length}&thinsp;stories</span>
@@ -209,7 +209,7 @@ export default function Home() {
         </main>
 
         <footer className="site-foot">
-          <span className="foot-brand">Supernova Labs · Signal</span>
+          <span className="foot-brand">Supernova Labs · Home to the Dreamers</span>
           <span className="foot-note">Built with love and determination, not by VC</span>
         </footer>
       </div>
