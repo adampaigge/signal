@@ -41,10 +41,8 @@ export default function PhysicsTitle({ text = 'THE SIGNAL', fontSize = 38, restY
     if (!canvas) return;
     const ctx = canvas.getContext('2d')!;
     const D = dpr.current;
-    // Scale font size to canvas width — smaller on mobile
-    const responsiveFontSize = canvas.getBoundingClientRect().width < 480
-      ? Math.min(fontSize, 22)
-      : fontSize;
+    const cw = canvas.getBoundingClientRect().width;
+    const responsiveFontSize = cw < 480 ? Math.min(fontSize, 26) : fontSize;
     const fs = responsiveFontSize * D;
 
     ctx.font = `800 ${fs}px "Newsreader", Georgia, serif`;
@@ -53,9 +51,7 @@ export default function PhysicsTitle({ text = 'THE SIGNAL', fontSize = 38, restY
     const gap   = fs * GAP_SCALE;
     const W  = canvas.width;
     let cx   = (W - meas.reduce((s, m) => s + m.w, 0) - gap * (meas.length - 1)) / 2;
-    const responsiveRestY = canvas.getBoundingClientRect().width < 480
-      ? Math.min(restY, 48)
-      : restY;
+    const responsiveRestY = cw < 480 ? 30 : restY;
     const cy = responsiveRestY * dpr.current;
 
     letters.current = meas.map(m => {
