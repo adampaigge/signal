@@ -297,7 +297,7 @@ body {
   text-transform: uppercase;
 }
 .mast-title-placeholder {
-  font-family: var(--fh); font-size: 38px; font-weight: 800;
+  font-family: var(--fh); font-size: clamp(20px, 5vw, 38px); font-weight: 800;
   letter-spacing: -0.02em; line-height: 1.05;
   color: transparent; user-select: none; pointer-events: none;
   white-space: nowrap;
@@ -305,7 +305,7 @@ body {
 }
 .physics-overlay {
   position: fixed; top: 0; left: 0; right: 0;
-  height: 180px; pointer-events: none; z-index: 9999;
+  height: clamp(100px, 18vh, 180px); pointer-events: none; z-index: 9999;
 }
 .physics-overlay > * { pointer-events: all; }
 .mast-date {
@@ -382,6 +382,16 @@ body {
 @media (max-width: 1100px) {
   .front-section { grid-template-columns: 1fr; }
   .front-aside { display: none; }
+}
+@media (max-width: 768px) {
+  .mast-top { padding: 12px 0 10px; }
+  .mast-logo { width: 26px; height: 26px; }
+  .mast-org { font-size: 7.5px; }
+  .mast-date { display: none; }
+  .mast-count { font-size: 10px; }
+  .rail-item { padding: 10px 10px; font-size: 10px; }
+  .body-shell { padding: 16px 14px 60px; }
+  .mast-inner { padding: 0 14px; }
 }
 .front-main { display: flex; flex-direction: column; gap: 16px; }
 .sec-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
