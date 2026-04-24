@@ -117,7 +117,7 @@ export default function Home() {
       <div className="snl-root">
         {/* Physics title overlay — outside masthead stacking context */}
         <div className="physics-overlay">
-          <PhysicsTitle text="THE SIGNAL" fontSize={38} restY={62} />
+          <PhysicsTitle text="THE SIGNAL" fontSize={38} restY={72} />
         </div>
         {/* ── Masthead ──────────────────────────────────────── */}
         <header ref={headerRef} className="masthead">
@@ -276,7 +276,7 @@ body {
 
 .mast-top {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 18px 0 14px; gap: 20px;
+  padding: 24px 0 20px; gap: 20px;
   overflow: visible;
 }
 
@@ -303,7 +303,7 @@ body {
 }
 .physics-overlay {
   position: fixed; top: 0; left: 0; right: 0;
-  height: 150px; pointer-events: none; z-index: 9999;
+  height: 180px; pointer-events: none; z-index: 9999;
 }
 .physics-overlay > * { pointer-events: all; }
 .mast-date {
@@ -322,14 +322,14 @@ body {
 /* ── Tag rail ────────────────────────────────────────────────── */
 .tag-rail {
   display: flex; align-items: center; gap: 0;
-  padding: 0; overflow-x: auto; scrollbar-width: none;
+  padding: 3px 0 5px; overflow-x: auto; scrollbar-width: none;
 }
 .tag-rail::-webkit-scrollbar { display: none; }
 
 .rail-item {
   position: relative;
   display: inline-flex; align-items: center; gap: 5px;
-  padding: 10px 14px;
+  padding: 13px 14px;
   background: transparent; border: none; border-bottom: 2px solid transparent;
   color: var(--ink3);
   font-family: var(--fm); font-size: 11px; font-weight: 500;
