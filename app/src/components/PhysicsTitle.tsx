@@ -47,11 +47,9 @@ export default function PhysicsTitle({ text = 'THE SIGNAL', fontSize = 52, restY
     const chars = text.split('');
     const meas  = chars.map(ch => ({ ch, w: ctx.measureText(ch).width }));
     const gap   = fs * GAP_SCALE;
-    const W     = canvas.width;
-    const H     = canvas.height;
-    let cx      = (W - meas.reduce((s, m) => s + m.w, 0) - gap * (meas.length - 1)) / 2;
-    const D2    = dpr.current;
-    const cy    = restY * D2;
+    const W  = canvas.width;
+    let cx   = (W - meas.reduce((s, m) => s + m.w, 0) - gap * (meas.length - 1)) / 2;
+    const cy = restY * dpr.current;
 
     letters.current = meas.map(m => {
       const x = cx + m.w / 2;
