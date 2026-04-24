@@ -275,8 +275,10 @@ body {
 .mast-inner { max-width: 1480px; margin: 0 auto; padding: 0 28px; overflow: visible; }
 
 .mast-top {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 22px 0 22px; gap: 20px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 22px 0 22px;
   overflow: visible;
   position: relative;
 }
@@ -300,26 +302,32 @@ body {
   font-family: var(--fh); font-size: 38px; font-weight: 800;
   letter-spacing: -0.02em; line-height: 1.05;
   color: transparent; user-select: none; pointer-events: none;
-  white-space: nowrap;
-  position: absolute; left: 50%; transform: translateX(-50%);
-}
-@media (max-width: 640px) {
-  .mast-title-placeholder {
-    position: static; transform: none;
-    font-size: 28px;
-    display: block; text-align: center;
-    padding: 2px 0 0;
-  }
+  white-space: nowrap; text-align: center;
 }
 .physics-overlay {
   position: fixed; top: 0; left: 0; right: 0;
   height: clamp(100px, 18vh, 180px); pointer-events: none; z-index: 9999;
 }
 @media (max-width: 640px) {
-  .physics-overlay {
-    top: 48px;
-    height: 60px;
+  .physics-overlay { display: none; }
+  .mast-title-placeholder {
+    color: transparent;
+    background: linear-gradient(115deg, #6baee8 0%, #dde1ec 50%, #c84a0c 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-size: 28px;
+    pointer-events: none;
   }
+  .mast-top {
+    grid-template-columns: auto 1fr auto;
+    gap: 8px;
+    padding: 14px 0 12px;
+  }
+  .mast-count { font-size: 10px; }
+  .mast-logo { width: 24px; height: 24px; }
+  .mast-org { font-size: 7px; }
+  .mast-date { display: none; }
 }
 .physics-overlay > * { pointer-events: all; }
 .mast-date {
@@ -328,7 +336,7 @@ body {
 }
 .mast-count {
   font-family: var(--fm); font-size: 11px; color: var(--ink3);
-  white-space: nowrap;
+  white-space: nowrap; text-align: right;
 }
 .mast-rule {
   height: 1px;
