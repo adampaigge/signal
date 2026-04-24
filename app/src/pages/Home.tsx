@@ -5,6 +5,7 @@ import StoryCard from '../components/StoryCard';
 import TrendPanel from '../components/TrendPanel';
 import ParticleField from '../components/ParticleField';
 import HeadlineTicker from '../components/HeadlineTicker';
+import PhysicsTitle from '../components/PhysicsTitle';
 
 interface StoriesPayload {
   stories: Story[];
@@ -107,6 +108,10 @@ export default function Home() {
       <ParticleField />
 
       <div className="snl-root">
+        {/* Physics title overlay — outside masthead stacking context */}
+        <div className="physics-overlay">
+          <PhysicsTitle text="THE SIGNAL" fontSize={38} restY={68} />
+        </div>
         {/* ── Masthead ──────────────────────────────────────── */}
         <header ref={headerRef} className="masthead">
           <div className="mast-inner">
@@ -115,9 +120,10 @@ export default function Home() {
               <span className="mast-date">{dateStr}</span>
               <div className="mast-wordmark">
                 <img src="/logo.png" alt="" className="mast-logo" />
-                <div className="mast-titles">
+                <div className="mast-physics">
                   <span className="mast-org">SUPERNOVA LABS</span>
-                  <span className="mast-name">THE SIGNAL</span>
+                  {/* Title height placeholder — actual canvas rendered below masthead */}
+                  <div className="mast-title-placeholder">THE SIGNAL</div>
                 </div>
               </div>
               <span className="mast-count">{stories.length}&thinsp;stories</span>
@@ -209,8 +215,8 @@ export default function Home() {
         </main>
 
         <footer className="site-foot">
-          <span className="foot-brand">Supernova Labs · Home to the Dreamers</span>
-          <span className="foot-note">Built with 💖 and determination, not by VC</span>
+          <span className="foot-brand">Supernova Labs · Signal</span>
+          <span className="foot-note">Built with love and determination, not by VC</span>
         </footer>
       </div>
     </>
@@ -257,20 +263,24 @@ body {
   background: rgba(7,8,12,0.94);
   backdrop-filter: blur(28px) saturate(1.5);
   border-bottom: 1px solid var(--rule2);
+  overflow: visible;
+  isolation: auto;
 }
-.mast-inner { max-width: 1480px; margin: 0 auto; padding: 0 28px; }
+.mast-inner { max-width: 1480px; margin: 0 auto; padding: 0 28px; overflow: visible; }
 
 .mast-top {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 14px 0 11px; gap: 20px;
+  padding: 18px 0 14px; gap: 20px;
+  overflow: visible;
 }
 
 .mast-wordmark {
   display: flex; align-items: center; gap: 12px;
+  overflow: visible; flex: 1;
 }
 .mast-logo {
-  width: 36px; height: 36px; object-fit: contain;
-  filter: drop-shadow(0 0 8px rgba(232,97,26,0.35));
+  width: 42px; height: 42px; object-fit: contain;
+  filter: drop-shadow(0 0 10px rgba(232,97,26,0.4));
 }
 .mast-titles {
   display: flex; flex-direction: column; gap: 0;
@@ -281,10 +291,25 @@ body {
   letter-spacing: 0.28em; color: var(--orange);
   text-transform: uppercase;
 }
-.mast-name {
-  font-family: var(--fh); font-size: 28px; font-weight: 800;
-  letter-spacing: -0.02em; color: var(--ink);
-  line-height: 1.05;
+.mast-physics {
+  display: flex; flex-direction: column; gap: 0;
+  overflow: visible; flex: 1; min-width: 0;
+}
+.mast-title-placeholder {
+  font-family: var(--fh); font-size: 38px; font-weight: 800;
+  letter-spacing: -0.02em; line-height: 1.05;
+  color: transparent; user-select: none; pointer-events: none;
+  height: 46px;
+}
+.physics-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 140px;
+  pointer-events: none;
+  z-index: 9999;
+}
+.physics-overlay > * {
+  pointer-events: all;
 }
 .mast-date {
   font-family: var(--fm); font-size: 11px; color: var(--ink3);
