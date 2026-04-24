@@ -50,7 +50,14 @@ function useStories() {
       .finally(() => setLoading(false));
   }, []);
 
-  return { stories, clusters, featured, loading };
+  // Fallback: if no featured stories (Mastodon not posting yet),
+  // use the first 5 stories that have a summary (bot-selected winners)
+  // or just the first 5 stories ordered by recency
+  const tickerStories = featured.length > 0
+    ? featured
+    : stories.filter(s => s.summary && s.summary.trim()).slice(0, 5);
+
+  return { stories, clusters, featured: tickerStories, loading };
 }
 
 export const TAG_LABELS: Record<string, string> = {
@@ -110,22 +117,21 @@ export default function Home() {
       <div className="snl-root">
         {/* Physics title overlay — outside masthead stacking context */}
         <div className="physics-overlay">
-          <PhysicsTitle text="THE SIGNAL" fontSize={38} restY={68} />
+          <PhysicsTitle text="THE SIGNAL" fontSize={38} restY={62} />
         </div>
         {/* ── Masthead ──────────────────────────────────────── */}
         <header ref={headerRef} className="masthead">
           <div className="mast-inner">
 
             <div className="mast-top">
-              <span className="mast-date">{dateStr}</span>
-              <div className="mast-wordmark">
+              <div className="mast-left">
                 <img src="/logo.png" alt="" className="mast-logo" />
-                <div className="mast-physics">
+                <div className="mast-id">
                   <span className="mast-org">SUPERNOVA LABS</span>
-                  {/* Title height placeholder — actual canvas rendered below masthead */}
-                  <div className="mast-title-placeholder">THE SIGNAL</div>
+                  <span className="mast-date">{dateStr}</span>
                 </div>
               </div>
+              <div className="mast-title-placeholder" aria-hidden="true">THE SIGNAL</div>
               <span className="mast-count">{stories.length}&thinsp;stories</span>
             </div>
 
@@ -274,43 +280,32 @@ body {
   overflow: visible;
 }
 
-.mast-wordmark {
-  display: flex; align-items: center; gap: 12px;
-  overflow: visible; flex: 1;
+.mast-left {
+  display: flex; align-items: center; gap: 10px; flex-shrink: 0;
 }
 .mast-logo {
-  width: 42px; height: 42px; object-fit: contain;
+  width: 40px; height: 40px; object-fit: contain;
   filter: drop-shadow(0 0 10px rgba(232,97,26,0.4));
 }
-.mast-titles {
-  display: flex; flex-direction: column; gap: 0;
-  line-height: 1;
+.mast-id {
+  display: flex; flex-direction: column; gap: 2px;
 }
 .mast-org {
   font-family: var(--fm); font-size: 9px; font-weight: 500;
   letter-spacing: 0.28em; color: var(--orange);
   text-transform: uppercase;
 }
-.mast-physics {
-  display: flex; flex-direction: column; gap: 0;
-  overflow: visible; flex: 1; min-width: 0;
-}
 .mast-title-placeholder {
   font-family: var(--fh); font-size: 38px; font-weight: 800;
   letter-spacing: -0.02em; line-height: 1.05;
   color: transparent; user-select: none; pointer-events: none;
-  height: 46px;
+  white-space: nowrap;
 }
 .physics-overlay {
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  height: 140px;
-  pointer-events: none;
-  z-index: 9999;
+  position: fixed; top: 0; left: 0; right: 0;
+  height: 150px; pointer-events: none; z-index: 9999;
 }
-.physics-overlay > * {
-  pointer-events: all;
-}
+.physics-overlay > * { pointer-events: all; }
 .mast-date {
   font-family: var(--fm); font-size: 11px; color: var(--ink3);
   letter-spacing: 0.02em; white-space: nowrap;
