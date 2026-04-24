@@ -149,7 +149,7 @@ export default function PhysicsTitle({ text = 'THE SIGNAL', fontSize = 52, restY
 
     // Build gradient across full letter span for rest positions
     const firstOx = ls[0]?.ox ?? 0;
-    const lastOx  = ls[ls.length - 1]?.ox ?? W;
+    const lastOx  = ls[ls.length - 1]?.ox ?? canvas.width;
     const grad = ctx.createLinearGradient(firstOx - 20, 0, lastOx + 20, 0);
     grad.addColorStop(0,    '#6baee8');
     grad.addColorStop(0.55, '#dde1ec');
