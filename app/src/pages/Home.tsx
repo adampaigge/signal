@@ -297,15 +297,29 @@ body {
   text-transform: uppercase;
 }
 .mast-title-placeholder {
-  font-family: var(--fh); font-size: clamp(20px, 5vw, 38px); font-weight: 800;
+  font-family: var(--fh); font-size: 38px; font-weight: 800;
   letter-spacing: -0.02em; line-height: 1.05;
   color: transparent; user-select: none; pointer-events: none;
   white-space: nowrap;
   position: absolute; left: 50%; transform: translateX(-50%);
 }
+@media (max-width: 640px) {
+  .mast-title-placeholder {
+    position: static; transform: none;
+    font-size: 28px;
+    display: block; text-align: center;
+    padding: 2px 0 0;
+  }
+}
 .physics-overlay {
   position: fixed; top: 0; left: 0; right: 0;
   height: clamp(100px, 18vh, 180px); pointer-events: none; z-index: 9999;
+}
+@media (max-width: 640px) {
+  .physics-overlay {
+    top: 48px;
+    height: 60px;
+  }
 }
 .physics-overlay > * { pointer-events: all; }
 .mast-date {
@@ -383,15 +397,20 @@ body {
   .front-section { grid-template-columns: 1fr; }
   .front-aside { display: none; }
 }
-@media (max-width: 768px) {
-  .mast-top { padding: 12px 0 10px; }
-  .mast-logo { width: 26px; height: 26px; }
-  .mast-org { font-size: 7.5px; }
+@media (max-width: 640px) {
+  .mast-inner { padding: 0 14px; }
+  .mast-top {
+    padding: 10px 0 8px;
+    flex-wrap: nowrap;
+  }
+  .mast-logo { width: 24px; height: 24px; }
+  .mast-org { font-size: 7px; letter-spacing: 0.2em; }
   .mast-date { display: none; }
   .mast-count { font-size: 10px; }
-  .rail-item { padding: 10px 10px; font-size: 10px; }
+  .tag-rail { padding: 4px 0 4px; }
+  .rail-item { padding: 9px 9px; font-size: 10px; }
   .body-shell { padding: 16px 14px 60px; }
-  .mast-inner { padding: 0 14px; }
+  .sec-pair { grid-template-columns: 1fr; }
 }
 .front-main { display: flex; flex-direction: column; gap: 16px; }
 .sec-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
