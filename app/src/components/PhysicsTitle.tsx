@@ -26,7 +26,7 @@ const DAMPING     = 0.993;
 const CENTER_PULL = 0.0008;
 const HIT_RADIUS  = 36;
 
-export default function PhysicsTitle({ text = 'THE SIGNAL', fontSize = 52, restY = 65, onWhip }: Props) {
+export default function PhysicsTitle({ text = 'THE SIGNAL', fontSize = 38, restY = 65, onWhip }: Props) {
   const canvasRef   = useRef<HTMLCanvasElement>(null);
   const letters     = useRef<Letter[]>([]);
   const restDists   = useRef<number[]>([]);
@@ -41,7 +41,11 @@ export default function PhysicsTitle({ text = 'THE SIGNAL', fontSize = 52, restY
     if (!canvas) return;
     const ctx = canvas.getContext('2d')!;
     const D = dpr.current;
-    const fs = fontSize * D;
+    // Scale font size to canvas width — smaller on mobile
+    const responsiveFontSize = canvas.getBoundingClientRect().width < 480
+      ? Math.min(fontSize, 22)
+      : fontSize;
+    const fs = responsiveFontSize * D;
 
     ctx.font = `800 ${fs}px "Newsreader", Georgia, serif`;
     const chars = text.split('');
@@ -49,7 +53,10 @@ export default function PhysicsTitle({ text = 'THE SIGNAL', fontSize = 52, restY
     const gap   = fs * GAP_SCALE;
     const W  = canvas.width;
     let cx   = (W - meas.reduce((s, m) => s + m.w, 0) - gap * (meas.length - 1)) / 2;
-    const cy = restY * dpr.current;
+    const responsiveRestY = canvas.getBoundingClientRect().width < 480
+      ? Math.min(restY, 48)
+      : restY;
+    const cy = responsiveRestY * dpr.current;
 
     letters.current = meas.map(m => {
       const x = cx + m.w / 2;
