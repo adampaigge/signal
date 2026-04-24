@@ -147,22 +147,32 @@ export default function PhysicsTitle({ text = 'THE SIGNAL', fontSize = 52, restY
       ctx.stroke();
     }
 
+    // Build gradient across full letter span for rest positions
+    const firstOx = ls[0]?.ox ?? 0;
+    const lastOx  = ls[ls.length - 1]?.ox ?? W;
+    const grad = ctx.createLinearGradient(firstOx - 20, 0, lastOx + 20, 0);
+    grad.addColorStop(0,    '#6baee8');
+    grad.addColorStop(0.55, '#dde1ec');
+    grad.addColorStop(1,    '#c84a0c');
+
     // Letters
     for (let i = 0; i < ls.length; i++) {
       const l       = ls[i];
       const isGrab  = gr === i;
       const speed   = Math.sqrt(l.vx * l.vx + l.vy * l.vy);
-      const glow    = Math.min(speed * 0.04, 1);
+      const glow    = Math.min(speed * 0.05, 1);
 
-      ctx.shadowColor = '#e8611a';
+      ctx.shadowColor = isGrab ? '#e8611a' : '#4f8ef7';
       ctx.shadowBlur  = isGrab
-        ? 22 * D
-        : glow > 0.05 ? glow * 18 * D : 0;
+        ? 24 * D
+        : glow > 0.05 ? glow * 20 * D : 0;
 
-      const alpha       = isGrab ? 1 : 0.82 + glow * 0.18;
-      ctx.fillStyle     = isGrab ? '#e8611a' : `rgba(228,231,242,${alpha})`;
+      // Grabbed letter burns orange, others use the gradient
+      ctx.fillStyle = isGrab ? '#e8611a' : grad;
+      ctx.globalAlpha = isGrab ? 1 : 0.85 + glow * 0.15;
       ctx.fillText(l.ch, l.x, l.y);
-      ctx.shadowBlur    = 0;
+      ctx.globalAlpha = 1;
+      ctx.shadowBlur  = 0;
     }
   }, [fontSize]);
 
