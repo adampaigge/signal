@@ -306,7 +306,7 @@ body {
 }
 .physics-overlay {
   position: fixed; top: 0; left: 0; right: 0;
-  height: clamp(100px, 18vh, 180px); pointer-events: none; z-index: 9999;
+  height: 80px; pointer-events: none; z-index: 9999;
 }
 @media (max-width: 640px) {
   .physics-overlay { display: none; }
