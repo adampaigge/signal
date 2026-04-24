@@ -285,6 +285,23 @@ export default function PhysicsTitle({ text = 'THE SIGNAL', fontSize = 38, restY
         height: '100%',
         cursor: 'crosshair',
         touchAction: 'none',
+        // Start with pointer-events none — onMouseMove switches this
+        // so the canvas only intercepts events when cursor is near a letter
+      }}
+      onMouseMove={(e) => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const rect = canvas.getBoundingClientRect();
+        const D = dpr.current;
+        const mx = (e.clientX - rect.left) * D;
+        const my = (e.clientY - rect.top) * D;
+        const hitR = HIT_RADIUS * D;
+        const near = letters.current.some(l => {
+          const dx = mx - l.x, dy = my - l.y;
+          return Math.sqrt(dx*dx + dy*dy) < hitR;
+        });
+        canvas.style.pointerEvents = near ? 'auto' : 'none';
+        canvas.style.cursor = near ? 'crosshair' : 'default';
       }}
     />
   );
